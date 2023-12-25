@@ -17,10 +17,10 @@ spec:
           /opt/mssql-tools/bin/sqlcmd -S 61.28.229.125 -U sa -P $dbPassword -Q "
             USE [master]
             RESTORE DATABASE [1BOSS_$(deploymentName)]
-            FROM DISK = N'/var/opt/mssql/1BOSS.bak'
+            FROM DISK = N'D:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\Backup\1BOSS.bak'
             WITH
-                MOVE N'ASOFT' TO N'/var/opt/mssql/data/1BOSS_$(deploymentName).mdf',
-                MOVE N'ASOFT_log' TO N'/var/opt/mssql/log/1BOSS_$(deploymentName).ldf',
+                MOVE N'ASOFT' TO N'D:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\1BOSS_$(deploymentName).mdf',
+                MOVE N'ASOFT_log' TO N'D:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\1BOSS_$(deploymentName).ldf',
                 NOUNLOAD, REPLACE;"
         volumeMounts:
           - name: secrets-volume
