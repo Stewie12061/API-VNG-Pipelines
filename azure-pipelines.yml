@@ -94,12 +94,6 @@ jobs:
         connectionType: 'kubernetesServiceConnection'
         kubernetesServiceConnection: 'VNG K8s API'
         namespace: 'default'
-    - task: KubernetesManifest@1
-      inputs:
-        action: 'deploy'
-        connectionType: 'kubernetesServiceConnection'
-        kubernetesServiceConnection: 'VNG K8s API'
-        namespace: 'default'
         manifests: |
           $(Pipeline.Workspace)/manifests/api-data.yaml
           $(Pipeline.Workspace)/manifests/api-deploy.yaml
