@@ -56,11 +56,8 @@ jobs:
     - task: KubernetesManifest@1
       inputs:
         action: 'deploy'
-        connectionType: 'azureResourceManager'
-        azureSubscriptionConnection: 'Azure subscription 1(224fc238-631d-456b-b3b0-bfc13f0458a7)'
-        azureResourceGroup: 'rg-api-latest'
-        kubernetesCluster: 'API-Cluster-latest'
-        useClusterAdmin: true
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'VNG K8s API'
         namespace: 'default'
         manifests: |
           $(Pipeline.Workspace)/manifests/job-restore-admin-db.yaml
