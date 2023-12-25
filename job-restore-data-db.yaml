@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: restore-data-database-job-$(deploymentName)
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      containers:
+      - name: sqlcmd
+        image: mcr.microsoft.com/mssql-tools
+        command:
+        - /bin/bash
+        - -c
+        - |
+          dbPassword=$(cat /mnt/secrets/SA_PASSWORD)
+          /opt/mssql-tools/bin/sqlcmd -S 61.28.229.125 -U sa -P $dbPassword -Q "
+            USE [master]
+            RESTORE DATABASE [1BOSS_$(deploymentName)]
+            FROM DISK = N'/var/opt/mssql/1BOSS.bak'
+            WITH
+                MOVE N'ASOFT' TO N'/var/opt/mssql/data/1BOSS_$(deploymentName).mdf',
+                MOVE N'ASOFT_log' TO N'/var/opt/mssql/log/1BOSS_$(deploymentName).ldf',
+                NOUNLOAD, REPLACE;"
+        volumeMounts:
+          - name: secrets-volume
+            mountPath: /mnt/secrets
+      restartPolicy: OnFailure
+      volumes:
+        - name: secrets-volume
+          secret:
+            secretName: mssql
+  backoffLimit: 4
+
+

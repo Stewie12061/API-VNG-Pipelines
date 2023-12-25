@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-cron-job-$(deploymentName)
+spec:
+  schedule: "$(useTimeMinute) $(currentHour) */1 * *"
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: account-service
+          restartPolicy: OnFailure
+          containers:
+          - name: cleanup-container
+            image: bitnami/kubectl
+            command: 
+            - "sh"
+            - "-c"
+            - >
+              kubectl delete deployment api-pvc-$(deploymentName) &&
+              kubectl delete deployment api-deploy-$(deploymentName) &&
+              kubectl delete service api-clusterip-srv-$(deploymentName) &&
+              sleep 300 &&
+              kubectl delete cronjob cleanup-cron-job-$(deploymentName)
+          initContainers:
+          - name: delete-db-admin-container
+            image: mcr.microsoft.com/mssql-tools
+            command:
+            - /bin/bash
+            - -c
+            - |
+              dbPassword=$(cat /mnt/secrets/SA_PASSWORD)
+              /opt/mssql-tools/bin/sqlcmd -S 61.28.229.125 -U sa -P $dbPassword -Q "
+                USE master;
+                ALTER DATABASE [AS_ADMIN_1BOSS_$(deploymentName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                DROP DATABASE [AS_ADMIN_1BOSS_$(deploymentName)];"
+            volumeMounts:
+            - name: secrets-volume
+              mountPath: /mnt/secrets
+          - name: delete-db-data-container
+            image: mcr.microsoft.com/mssql-tools
+            command:
+            - /bin/bash
+            - -c
+            - |
+              dbPassword=$(cat /mnt/secrets/SA_PASSWORD)
+              /opt/mssql-tools/bin/sqlcmd -S 61.28.229.125 -U sa -P $dbPassword -Q "
+                USE master;
+                ALTER DATABASE [1BOSS_$(deploymentName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                DROP DATABASE [1BOSS_$(deploymentName)];"
+            volumeMounts:
+            - name: secrets-volume
+              mountPath: /mnt/secrets
+          volumes:
+          - name: secrets-volume
+            secret:
+              secretName: mssql
+
