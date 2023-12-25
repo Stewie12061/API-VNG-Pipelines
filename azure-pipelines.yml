@@ -1,0 +1,109 @@
+parameters:
+  - name: deploymentName
+    type: string
+    default: test
+  - name: useTimeMinute
+    type: number
+    default: 59
+  - name: currentHour
+    type: number
+    #K8s Use Coordinated Universal Time (UTC), VN UTC +7
+    default: 9
+    
+trigger: none
+
+resources:
+  - repo: self
+
+pool:
+  name: Stewie
+
+jobs:
+- job: DeployAll
+  displayName: 'Deploy API and WEB For ${{ parameters.deploymentName }}'
+  steps:
+    - powershell: |
+        Write-Host "deploymentName: ${{ parameters.deploymentName }}"
+        Write-Host "useTimeMinute: ${{ parameters.useTimeMinute }}"
+        Write-Host "currentHour: ${{ parameters.currentHour }}"
+      displayName: 'Diagnostic - Check deploymentName Value'
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+      displayName: 'Publish Pipeline Artifact'
+
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'manifests'
+        targetPath: '$(Pipeline.Workspace)/manifests'
+      displayName: 'Download Pipeline Artifact'
+
+    - powershell: |
+        $templateFiles = Get-ChildItem -Path $(Pipeline.Workspace)/manifests -Filter '*.yaml' -Recurse
+        foreach ($file in $templateFiles) {
+          (Get-Content $file.FullName) | ForEach-Object {
+            $_ -replace '\$\(deploymentName\)', '${{ parameters.deploymentName }}' `
+              -replace '\$\(useTimeMinute\)', '${{ parameters.useTimeMinute }}' `
+              -replace '\$\(currentHour\)', '${{ parameters.currentHour }}'
+          } | Set-Content $file.FullName
+        }
+      displayName: 'Replace Variables in YAML Templates'
+
+    - task: KubernetesManifest@1
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'VNG K8s API'
+        namespace: 'default'
+        manifests: |
+          $(Pipeline.Workspace)/manifests/job-restore-admin-db.yaml
+          $(Pipeline.Workspace)/manifests/job-restore-data-db.yaml
+      displayName: 'Deploy restore database job'
+
+    - powershell: |
+        # Additional step to wait for the database to be ONLINE
+        $DatabaseName = "1BOSS_${{ parameters.deploymentName }}"
+        $ServerName = "61.28.229.125"
+
+        Write-Host "Server Name: $ServerName"
+        Write-Host "Database Name: $DatabaseName"
+
+        # Infinite loop
+        while ($true) {
+            $connectionString = "Server=$ServerName;Database=master;User Id=sa;Password=As@19006123;TrustServerCertificate=True;"
+            $databaseStatus = Invoke-Sqlcmd -ConnectionString $connectionString -Query "SELECT state_desc FROM sys.databases WHERE name = '$DatabaseName'"
+            $databaseState = $databaseStatus.state_desc
+
+            Write-Host "Database state: $databaseState"
+
+            if ($databaseState -eq "ONLINE") {
+                Write-Host "Database is now ONLINE. Proceeding with deployment."
+                break
+            }
+            Start-Sleep -Seconds 10  # Adjust the sleep interval as needed
+        }
+      displayName: 'Check database status'
+
+    - task: KubernetesManifest@1
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'VNG K8s API'
+        namespace: 'default'
+    - task: KubernetesManifest@1
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'VNG K8s API'
+        namespace: 'default'
+        manifests: |
+          $(Pipeline.Workspace)/manifests/api-data.yaml
+          $(Pipeline.Workspace)/manifests/api-deploy.yaml
+          $(Pipeline.Workspace)/manifests/job-ingress-add-host.yaml
+          $(Pipeline.Workspace)/manifests/cron-job-run-delete-deploy.yaml
+          $(Pipeline.Workspace)/manifests/cron-job-ingress-remove-host.yaml
+      displayName: 'Deploy api'
