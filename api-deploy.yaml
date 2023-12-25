@@ -40,7 +40,7 @@ spec:
           secretName: google-credentials
       - name: api-log-$(deploymentName)
         persistentVolumeClaim:
-          claimName: api-volume-claim-log-$(deploymentName)
+          claimName: api-pvc-$(deploymentName)
 ---
 apiVersion: v1
 kind: Service
