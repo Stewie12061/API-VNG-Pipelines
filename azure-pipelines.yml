@@ -87,6 +87,37 @@ jobs:
             Start-Sleep -Seconds 10  # Adjust the sleep interval as needed
         }
       displayName: 'Check database status'
+    
+    - powershell: |
+        # Set your GoDaddy API key and secret
+        $apiKey = "gHzYh74VJWFj_GeraDcnduffMvAVVGiDnZP"
+        $apiSecret = "JJA6UeV6NoQAc7SSb8hr3W"
+
+        # Set the domain and record information
+        $domain = "minhnhut.online"
+        $recordType = "A"
+        $recordName = "${{ parameters.deploymentName }}api"
+        $recordData = "20.92.68.166"
+        $ttl = 600
+
+        # Construct the API endpoint URL
+        $apiEndpoint = "https://api.godaddy.com/v1/domains/$domain/records"
+
+        # Construct the headers
+        $headers = @{
+            'Authorization' = "sso-key $($apiKey):$($apiSecret)"
+            'Content-Type'  = 'application/json'
+        }
+
+        # Construct the payload for the new DNS record
+        $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
+
+        # Make the API request to create the DNS record
+        $response = Invoke-WebRequest -Uri $apiEndpoint -Method Patch -Headers $headers -Body $payload
+
+        # Display the response
+        $response
+      displayName: 'Add DNS Record For API'
 
     - task: KubernetesManifest@1
       inputs:
