@@ -72,8 +72,12 @@ jobs:
         Write-Host "Server Name: $ServerName"
         Write-Host "Database Name: $DatabaseName"
 
-        # Infinite loop
-        while ($true) {
+        # Loop for a maximum of $maxAttempts times
+        $maxAttempts = 10
+        $attempts = 0
+        while ($attempts -lt $maxAttempts) {
+            $attempts++
+
             $connectionString = "Server=$ServerName;Database=master;User Id=sa;Password=As@19006123;TrustServerCertificate=True;"
             $databaseStatus = Invoke-Sqlcmd -ConnectionString $connectionString -Query "SELECT state_desc FROM sys.databases WHERE name = '$DatabaseName'"
             $databaseState = $databaseStatus.state_desc
@@ -84,7 +88,13 @@ jobs:
                 Write-Host "Database is now ONLINE. Proceeding with deployment."
                 break
             }
-            Start-Sleep -Seconds 10  # Adjust the sleep interval as needed
+            Write-Host "Waiting for the database to be ONLINE. Attempt $attempts of $maxAttempts."
+            Start-Sleep -Seconds 10
+        }
+        # Check if the loop exited due to reaching the maximum number of attempts
+        if ($attempts -eq $maxAttempts) {
+            Write-Host "Database did not come ONLINE after $maxAttempts attempts. Canceling deployment."
+            exit 1  # Exit the script with a non-zero status code to mark it as failed
         }
       displayName: 'Check database status'
     
@@ -97,7 +107,7 @@ jobs:
         $domain = "minhnhut.online"
         $recordType = "A"
         $recordName = "${{ parameters.deploymentName }}api"
-        $recordData = "20.92.68.166"
+        $recordData = "180.93.180.102"
         $ttl = 600
 
         # Construct the API endpoint URL
