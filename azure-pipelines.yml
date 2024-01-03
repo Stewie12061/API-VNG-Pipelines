@@ -145,13 +145,10 @@ jobs:
     
     - task: PowerShellOnTargetMachines@3
       inputs:
-        Machines: '116.118.95.121:3490'
+        Machines: '116.118.95.121:5986'
         UserName: 'web-server\stewie12061'
         UserPassword: 'As@19006123'
         InlineScript: |
           Write-Host "Attempting to establish connection to remote server..."
-                    $folderName="${{ parameters.deploymentName }}"
-                    robocopy "C:\Web\Publish0" "C:\Web\$folderName" /E /MT:8 /CREATE
-        CommunicationProtocol: 'Http'
-        AuthenticationMechanism: 'Credssp'
-        NewPsSessionOptionArguments: '-SkipCACheck -SkipCNCheck -IdleTimeout 7200000 -OperationTimeout 0 -OutputBufferingMode Block'
+          $folderName="${{ parameters.deploymentName }}"
+          robocopy "C:\Web\Publish0" "C:\Web\$folderName" /E /MT:8 /CREATE
