@@ -145,7 +145,7 @@ jobs:
     
     - task: PowerShellOnTargetMachines@3
       inputs:
-        Machines: '116.118.95.121:5986'
+        Machines: '116.118.95.121'
         UserName: 'web-server\stewie12061'
         UserPassword: 'As@19006123'
         InlineScript: |
