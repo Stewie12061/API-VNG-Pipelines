@@ -152,5 +152,5 @@ jobs:
           Write-Host "Attempting to establish connection to remote server..."
                               $folderName="${{ parameters.deploymentName }}"
                               robocopy "C:\Web\Publish0" "C:\Web\$folderName" /E /MT:8 /CREATE
-        NewPsSessionOptionArguments: '-SkipCACheck'
+        NewPsSessionOptionArguments: '-SkipCACheck -SkipCNCheck -SkipRevocationCheck'
     
