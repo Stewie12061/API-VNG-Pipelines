@@ -150,6 +150,11 @@ jobs:
         UserPassword: 'As@19006123'
         InlineScript: |
           $folderName="${{ parameters.deploymentName }}"
-          robocopy "C:\Web\Publish0" "C:\Web\$folderName" /E /MT:8 /CREATE /TEE /LOG:"C:\Web\LogFile.txt" /NP
+          robocopy "C:\Web\Publish0" "C:\Web\$folderName" /E /MT:8 /CREATE /np /ndl /nfl /nc /ns
+          robocopy "C:\Web\Publish0" "C:\Web\test1" /E /MT:8 /CREATE /np /ndl /nfl /nc /ns
+          robocopy "C:\Web\Publish0" "C:\Web\test2" /E /MT:8 /CREATE /np /ndl /nfl /nc /ns
+          robocopy "C:\Web\Publish0" "C:\Web\test3" /E /MT:8 /CREATE /np /ndl /nfl /nc /ns
+          robocopy "C:\Web\Publish0" "C:\Web\test4" /E /MT:8 /CREATE /np /ndl /nfl /nc /ns
+          robocopy "C:\Web\Publish0" "C:\Web\test5" /E /MT:8 /CREATE /np /ndl /nfl /nc /ns
         NewPsSessionOptionArguments: '-SkipCACheck -SkipCNCheck -SkipRevocationCheck'
     
