@@ -146,7 +146,7 @@ jobs:
     - task: PowerShellOnTargetMachines@3
       inputs:
         Machines: '116.118.95.121:3490'
-        UserName: 'stewie12061'
+        UserName: 'web-server\stewie12061'
         UserPassword: 'As@19006123'
         InlineScript: |
           Write-Host "Attempting to establish connection to remote server..."
