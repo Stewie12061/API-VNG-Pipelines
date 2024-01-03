@@ -150,5 +150,8 @@ jobs:
         UserPassword: 'As@19006123'
         InlineScript: |
           Write-Host "Attempting to establish connection to remote server..."
-          $folderName="${{ parameters.deploymentName }}"
-          robocopy "C:\Web\Publish0" "C:\Web\$folderName" /E /MT:8 /CREATE
+                    $folderName="${{ parameters.deploymentName }}"
+                    robocopy "C:\Web\Publish0" "C:\Web\$folderName" /E /MT:8 /CREATE
+        CommunicationProtocol: 'Http'
+        NewPsSessionOptionArguments: '-SkipCACheck'
+    
