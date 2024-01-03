@@ -152,4 +152,6 @@ jobs:
           $folderName="${{ parameters.deploymentName }}"
           robocopy "C:\Web\Publish0" "C:\Web\$folderName" /E /MT:4 /np /ndl /nfl /nc /ns
         NewPsSessionOptionArguments: '-SkipCACheck -SkipCNCheck -SkipRevocationCheck'
+        ignoreLASTEXITCODE: true
+        RunPowershellInParallel: false
     
