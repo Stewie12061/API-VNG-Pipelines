@@ -222,7 +222,7 @@ jobs:
               $configContent = Get-Content -Path $configFilePath -Raw
 
               # Perform the necessary modifications (replace database names)
-              $configContent = $configContent -replace 'Database=22S999_INTERNALPROJECT_1;', "Database=1BOSS_$folderName"
+              $configContent = $configContent -replace 'Database=22S999_INTERNALPROJECT_1;', "Database=1BOSS_$folderName;"
               $configContent = $configContent -replace 'Database=AS_ADMIN_1BOSS_1;', "Database=AS_ADMIN_1BOSS_$folderName;"
 
               # Save the modified content back to the web.config file
