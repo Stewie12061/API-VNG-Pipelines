@@ -25,7 +25,7 @@ spec:
                 INDEX=$(kubectl get ingress ingress-route -o=json | jq -r '.spec.rules[].host' | grep -n "$(deploymentName)api.minhnhut.online" | cut -d: -f1)
                 echo "INDEX: $INDEX"
                 kubectl patch ingress ingress-route -n default --type json -p "[{'op': 'remove', 'path': '/spec/rules/$((INDEX-1))'}]" 
-                sleep 300 &&
+                sleep 60 &&
                 kubectl delete cronjob remove-ingress-cronjob-$(deploymentName)
             volumeMounts:
               - name: shared-volume

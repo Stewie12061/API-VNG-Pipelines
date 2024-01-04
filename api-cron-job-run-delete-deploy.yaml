@@ -22,7 +22,7 @@ spec:
               kubectl delete pvc api-pvc-$(deploymentName) &&
               kubectl delete deployment api-deploy-$(deploymentName) &&
               kubectl delete service api-clusterip-srv-$(deploymentName) &&
-              sleep 300 &&
+              sleep 60 &&
               kubectl delete cronjob cleanup-cron-job-$(deploymentName)
           initContainers:
           - name: delete-db-admin-container
