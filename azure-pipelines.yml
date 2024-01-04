@@ -143,6 +143,37 @@ jobs:
     #       $(Pipeline.Workspace)/manifests/api-cron-job-ingress-remove-host.yaml
     #   displayName: 'Deploy api'
     
+    - powershell: |
+        # Set your GoDaddy API key and secret
+        $apiKey = "gHzYh74VJWFj_GeraDcnduffMvAVVGiDnZP"
+        $apiSecret = "JJA6UeV6NoQAc7SSb8hr3W"
+
+        # Set the domain and record information
+        $domain = "minhnhut.online"
+        $recordType = "A"
+        $recordName = "${{ parameters.deploymentName }}web"
+        $recordData = "116.118.95.121"
+        $ttl = 600
+
+        # Construct the API endpoint URL
+        $apiEndpoint = "https://api.godaddy.com/v1/domains/$domain/records"
+
+        # Construct the headers
+        $headers = @{
+            'Authorization' = "sso-key $($apiKey):$($apiSecret)"
+            'Content-Type'  = 'application/json'
+        }
+
+        # Construct the payload for the new DNS record
+        $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
+
+        # Make the API request to create the DNS record
+        $response = Invoke-WebRequest -Uri $apiEndpoint -Method Patch -Headers $headers -Body $payload
+
+        # Display the response
+        $response
+      displayName: 'Add DNS Record For Web'
+
     - task: PowerShellOnTargetMachines@3
       inputs:
         Machines: '116.118.95.121:5986'
