@@ -174,16 +174,21 @@ jobs:
         $response
       displayName: 'Add DNS Record For Web'
 
+    - task: Robocopy@1
+      inputs:
+        source: 'C:\Web\Publish0'
+        destination: 'C:\Web\${{ parameters.deploymentName }}'
+        copySubDirsAll: true
+        copyOptions: '/MT:4 /np /ndl /nfl /nc /ns'
+      displayName: "Create publish folder ${{ parameters.deploymentName }}"
     - task: PowerShellOnTargetMachines@3
       inputs:
         Machines: '116.118.95.121:5986'
         UserName: 'web-server\stewie12061'
         UserPassword: 'As@19006123'
         InlineScript: |
-          $folderName="${{ parameters.deploymentName }}"
-          Start-Process "robocopy.exe" -ArgumentList "C:\Web\Publish0", "C:\Web\$folderName", "/E", "/MT:4", "/np", "/ndl", "/nfl", "/nc", "/ns" -Wait
-
           # Define variables
+          $folderName = ${{ parameters.deploymentName }}
           $siteName = "$folderName"
           $publishFolder = "C:\Web\$folderName"
           $applicationPoolName = "$folderName"
