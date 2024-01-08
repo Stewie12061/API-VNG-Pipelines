@@ -183,7 +183,7 @@ jobs:
         InlineScript: |
           # Define variables
           $folderName="${{ parameters.deploymentName }}"
-          Start-Process "robocopy.exe" -ArgumentList "C:Publish0", "C:\Web\$folderName", "/E", "/MT:4", "/np", "/ndl", "/nfl", "/nc", "/ns" -Wait
+          Start-Process "robocopy.exe" -ArgumentList "C:\Publish0", "C:\Web\$folderName", "/E", "/MT:4", "/np", "/ndl", "/nfl", "/nc", "/ns" -Wait
           $siteName = "$folderName"
           $publishFolder = "C:\Web\$folderName"
           $applicationPoolName = "$folderName"
