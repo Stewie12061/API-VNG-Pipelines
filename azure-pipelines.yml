@@ -177,7 +177,7 @@ jobs:
     - task: RemoteCopy@1
       inputs:
         RemoteComputer: '116.118.95.121:5986'
-        UserName: 'web-server\stewie12061'
+        UserName: 'stewie12061'
         Password: 'As@19006123'
         Source: 'C:\Publish0'
         Destination: 'C:\Web\${{ parameters.deploymentName }}'
