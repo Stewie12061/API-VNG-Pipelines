@@ -176,19 +176,20 @@ jobs:
 
     - task: Robocopy@1
       inputs:
-        source: 'C:\Web\Publish0'
+        source: 'C:\Publish0'
         destination: 'C:\Web\${{ parameters.deploymentName }}'
         copySubDirsAll: true
         copyOptions: '/MT:4 /np /ndl /nfl /nc /ns'
       displayName: "Create publish folder ${{ parameters.deploymentName }}"
     - task: PowerShellOnTargetMachines@3
+      displayName: "Create IIS Web"
       inputs:
         Machines: '116.118.95.121:5986'
         UserName: 'web-server\stewie12061'
         UserPassword: 'As@19006123'
         InlineScript: |
           # Define variables
-          $folderName = ${{ parameters.deploymentName }}
+          $folderName = "${{ parameters.deploymentName }}"
           $siteName = "$folderName"
           $publishFolder = "C:\Web\$folderName"
           $applicationPoolName = "$folderName"
