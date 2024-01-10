@@ -19,11 +19,21 @@ spec:
             - "sh"
             - "-c"
             - >
+              export PATH=$PATH:/shared/usr/bin
+
+              # Run kubectl commands with debugging statements
+              INDEX=$(kubectl get ingress ingress-route -o=json | jq -r '.spec.rules[].host' | grep -n "$(deploymentName)api.minhnhut.online" | cut -d: -f1)
+              echo "INDEX: $INDEX"
+              kubectl patch ingress ingress-route -n default --type json -p "[{'op': 'remove', 'path': '/spec/rules/$((INDEX-1))'}]" 
+              
               kubectl delete pvc api-pvc-$(deploymentName) &&
               kubectl delete deployment api-deploy-$(deploymentName) &&
               kubectl delete service api-clusterip-srv-$(deploymentName) &&
               sleep 60 &&
               kubectl delete cronjob cleanup-cron-job-$(deploymentName)
+            volumeMounts:
+              - name: shared-volume
+                mountPath: /shared
           initContainers:
           - name: delete-db-admin-container
             image: mcr.microsoft.com/mssql-tools
@@ -32,7 +42,8 @@ spec:
             - -c
             - |
               dbPassword=$(cat /mnt/secrets/SA_PASSWORD)
-              /opt/mssql-tools/bin/sqlcmd -S 61.28.229.125 -U sa -P $dbPassword -Q "
+              serverName=$(cat /mnt/secrets/SQLSERVER)
+              /opt/mssql-tools/bin/sqlcmd -S $serverName -U sa -P $dbPassword -Q "
                 USE master;
                 ALTER DATABASE [AS_ADMIN_1BOSS_$(deploymentName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
                 DROP DATABASE [AS_ADMIN_1BOSS_$(deploymentName)];"
@@ -46,15 +57,26 @@ spec:
             - -c
             - |
               dbPassword=$(cat /mnt/secrets/SA_PASSWORD)
-              /opt/mssql-tools/bin/sqlcmd -S 61.28.229.125 -U sa -P $dbPassword -Q "
+              serverName=$(cat /mnt/secrets/SQLSERVER)
+              /opt/mssql-tools/bin/sqlcmd -S $serverName -U sa -P $dbPassword -Q "
                 USE master;
                 ALTER DATABASE [1BOSS_$(deploymentName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
                 DROP DATABASE [1BOSS_$(deploymentName)];"
             volumeMounts:
             - name: secrets-volume
               mountPath: /mnt/secrets
+          - name: install-tools
+            image: debian:stable-slim
+            command: ["/bin/sh", "-c"]
+            args:
+              - apt-get update && apt-get install -y jq
+            volumeMounts:
+            - name: shared-volume
+              mountPath: /shared
           volumes:
           - name: secrets-volume
             secret:
               secretName: mssql
+          - name: shared-volume
+            emptyDir: {}
 

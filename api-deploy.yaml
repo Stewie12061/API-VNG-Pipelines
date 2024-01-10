@@ -25,22 +25,22 @@ spec:
         volumeMounts:
         - name: google-credentials
           mountPath: /var/secrets/google
-        - mountPath: /app/Logs/
-          name: api-log-$(deploymentName)
+        - name: mssql-secret
+          mountPath: /var/secrets/mssql
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /var/secrets/google/asoft-erp-firebase-adminsdk-7vzks-f1d0261521.json
         - name: DbConnectionStrings__ConnectionStrings__Business
-          value: Server=61.28.229.125,1433;initial catalog=1BOSS_$(deploymentName);user id=sa;password=As@19006123;Encrypt=false;TrustServerCertificate=True;Connection Timeout=30;
+          value: Server=$(cat /var/secrets/mssql/SQLSERVER),1433;initial catalog=1BOSS_$(deploymentName);user id=sa;password=$(cat /var/secrets/mssql/SA_PASSWORD);Encrypt=false;TrustServerCertificate=True;Connection Timeout=30;
         - name: DbConnectionStrings__ConnectionStrings__Admin
-          value: Server=61.28.229.125,1433;initial catalog=AS_ADMIN_1BOSS_$(deploymentName);user id=sa;password=As@19006123;Encrypt=false;TrustServerCertificate=True;Connection Timeout=30;
+          value: Server=$(cat /var/secrets/mssql/SQLSERVER),1433;initial catalog=AS_ADMIN_1BOSS_$(deploymentName);user id=sa;password=$(cat /var/secrets/mssql/SA_PASSWORD);Encrypt=false;TrustServerCertificate=True;Connection Timeout=30;
       volumes:
       - name: google-credentials
         secret:
           secretName: google-credentials
-      - name: api-log-$(deploymentName)
-        persistentVolumeClaim:
-          claimName: api-pvc-$(deploymentName)
+      - name: mssql-secret
+        secret:
+          secretName: mssql
 ---
 apiVersion: v1
 kind: Service
