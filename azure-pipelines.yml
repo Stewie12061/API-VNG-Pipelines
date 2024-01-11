@@ -277,7 +277,7 @@ jobs:
         ServerPassword: 'As@19006123'
         UseSSL: true
         Method: 'Manual'
-        TaskName: 'Delete ${{ parameters.deploymentName }} Site'
+        TaskName: 'Delete ${{ parameters.deploymentName }} Site 2'
         TaskDescription: 'Delete Publish folder, IIS Site and Pool'
         TaskActions: '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -File C:\CleanpUpSite.ps1 test'
         TaskEnabled: 'CurrentTaskState'
