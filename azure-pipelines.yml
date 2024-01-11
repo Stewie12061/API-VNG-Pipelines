@@ -248,7 +248,7 @@ jobs:
         ScheduledTaskDefinitionSource: 'Inline'
         ScheduledTaskFullName: 'Delete ${{ parameters.deploymentName }} Site'
         ApplicationPathToRun: 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-        ApplicationArguments: '-File "C:\CleanpUpSite.ps1" test'
+        ApplicationArguments: '-File C:\CleanpUpSite.ps1 test'
         WorkingDirectoryOptions: 'ApplicationDirectory'
         ScheduleTriggerType: 'DateTime'
         DateTimeScheduleStartTime: '2024/01/11 17:00:00'
