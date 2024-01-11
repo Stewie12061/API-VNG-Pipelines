@@ -48,7 +48,9 @@ jobs:
           (Get-Content $file.FullName) | ForEach-Object {
             $_ -replace '\$\(deploymentName\)', '${{ parameters.deploymentName }}' `
               -replace '\$\(useTimeMinute\)', '${{ parameters.useTimeMinute }}' `
-              -replace '\$\(currentHour\)', '${{ parameters.currentHour }}'
+              -replace '\$\(currentHour\)', '${{ parameters.currentHour }}' `
+              -replace '\$\(SQLSERVER\)', '${env:SQLSERVER}' `
+              -replace '\$\(SA_PASSWORD\)', '${env:SA_PASSWORD}'
           } | Set-Content $file.FullName
         }
       displayName: 'Replace Variables in YAML Templates'
@@ -66,7 +68,8 @@ jobs:
     - powershell: |
         # Additional step to wait for the database to be ONLINE
         $DatabaseName = "1BOSS_${{ parameters.deploymentName }}"
-        $ServerName = "61.28.229.125"
+        $ServerName = "${env:SQLSERVER}"
+        $DBPassword = "${env:SA_PASSWORD}"
 
         Write-Host "Server Name: $ServerName"
         Write-Host "Database Name: $DatabaseName"
@@ -77,7 +80,7 @@ jobs:
         while ($attempts -lt $maxAttempts) {
             $attempts++
 
-            $connectionString = "Server=$ServerName;Database=master;User Id=sa;Password=As@19006123;TrustServerCertificate=True;"
+            $connectionString = "Server=$ServerName;Database=master;User Id=sa;Password=$DBPassword;TrustServerCertificate=True;"
             $databaseStatus = Invoke-Sqlcmd -ConnectionString $connectionString -Query "SELECT state_desc FROM sys.databases WHERE name = '$DatabaseName'"
             $databaseState = $databaseStatus.state_desc
 
@@ -98,15 +101,14 @@ jobs:
       displayName: 'Check database status'
     
     - powershell: |
-        # Set your GoDaddy API key and secret
-        $apiKey = "gHzYh74VJWFj_GeraDcnduffMvAVVGiDnZP"
-        $apiSecret = "JJA6UeV6NoQAc7SSb8hr3W"
+        $apiKey = "${env:DNS_APIKEY}"
+        $apiSecret = "${env:DNS_APISECRET}"
 
         # Set the domain and record information
-        $domain = "minhnhut.online"
+        $domain = "{env:DOMAIN}"
         $recordType = "A"
         $recordName = "${{ parameters.deploymentName }}api"
-        $recordData = "180.93.180.102"
+        $recordData = "${env:DNS_RECORD_DATA_API}"
         $ttl = 600
 
         # Construct the API endpoint URL
@@ -142,14 +144,14 @@ jobs:
     
     - powershell: |
         # Set your GoDaddy API key and secret
-        $apiKey = "gHzYh74VJWFj_GeraDcnduffMvAVVGiDnZP"
-        $apiSecret = "JJA6UeV6NoQAc7SSb8hr3W"
+        $apiKey = "${env:DNS_APIKEY}"
+        $apiSecret = "${env:DNS_APISECRET}"
 
         # Set the domain and record information
-        $domain = "minhnhut.online"
+        $domain = "{env:DOMAIN}"
         $recordType = "A"
         $recordName = "${{ parameters.deploymentName }}web"
-        $recordData = "116.118.95.121"
+        $recordData = "${env:DNS_RECORD_DATA_WEB}"
         $ttl = 600
 
         # Construct the API endpoint URL
@@ -175,8 +177,8 @@ jobs:
       displayName: "Create IIS Web"
       inputs:
         Machines: '116.118.95.121:5986'
-        UserName: 'web-server\stewie12061'
-        UserPassword: 'As@19006123'
+        UserName: "${env:WEBSERVER_USERNAME}"
+        UserPassword: "${env:WEBSERVER_PASSWORD}"
         InlineScript: |
           # Define variables
           $folderName="${{ parameters.deploymentName }}"
