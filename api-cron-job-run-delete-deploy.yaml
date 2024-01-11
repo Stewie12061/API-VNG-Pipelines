@@ -18,7 +18,7 @@ spec:
             command: 
             - "sh"
             - "-c"
-            - >
+            - |
               export PATH=$PATH:/shared/usr/bin
 
               # Run kubectl commands with debugging statements
