@@ -43,14 +43,16 @@ jobs:
       displayName: 'Download Pipeline Artifact'
 
     - powershell: |
+        $SA_PASSWORD = "${env:SA_PASSWORD}"
+        $SQLSERVER = "${env:SQLSERVER}"
         $templateFiles = Get-ChildItem -Path $(Pipeline.Workspace)/manifests -Filter '*.yaml' -Recurse
         foreach ($file in $templateFiles) {
           (Get-Content $file.FullName) | ForEach-Object {
             $_ -replace '\$\(deploymentName\)', '${{ parameters.deploymentName }}' `
               -replace '\$\(useTimeMinute\)', '${{ parameters.useTimeMinute }}' `
               -replace '\$\(currentHour\)', '${{ parameters.currentHour }}' `
-              -replace '\$\(SQLSERVER\)', '${env:SQLSERVER}' `
-              -replace '\$\(SA_PASSWORD\)', '${env:SA_PASSWORD}'
+              -replace '\$\(SQLSERVER\)', "$SQLSERVER" `
+              -replace '\$\(SA_PASSWORD\)', "$SA_PASSWORD"
           } | Set-Content $file.FullName
         }
       displayName: 'Replace Variables in YAML Templates'
@@ -177,8 +179,8 @@ jobs:
       displayName: "Create IIS Web"
       inputs:
         Machines: '116.118.95.121:5986'
-        UserName: "${env:WEBSERVER_USERNAME}"
-        UserPassword: "${env:WEBSERVER_PASSWORD}"
+        UserName: '$(WEBSERVER_USERNAME)'
+        UserPassword: '$(WEBSERVER_PASSWORD)'
         InlineScript: |
           # Define variables
           $folderName="${{ parameters.deploymentName }}"
