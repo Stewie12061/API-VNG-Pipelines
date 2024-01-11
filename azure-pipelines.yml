@@ -251,7 +251,7 @@ jobs:
         ApplicationArguments: '-File C:\CleanpUpSite.ps1 test'
         WorkingDirectoryOptions: 'ApplicationDirectory'
         ScheduleTriggerType: 'DateTime'
-        DateTimeScheduleStartTime: '2024-01-11 $[add(parameters.currentHour, 7)]:${{ parameters.useTimeMinute }}:00'
+        DateTimeScheduleStartTime: '2024-01-11 ${{ parameters.currentHour+7 }}:${{ parameters.useTimeMinute }}:00'
         DateTimeScheduleFrequencyOptions: 'Once'
         ShouldScheduledTaskRunRepeatedlyString: false
         ScheduledTaskAccountToRunAsOptions: 'CustomAccount'
