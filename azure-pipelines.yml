@@ -4,11 +4,11 @@ parameters:
     default: test
   - name: useTimeMinute
     type: number
-    default: 59
+    default: 00
   - name: currentHour
     type: number
     #K8s Use Coordinated Universal Time (UTC), VN UTC +7
-    default: 9
+    default: 17
     
 trigger: none
 
@@ -251,7 +251,7 @@ jobs:
         ApplicationArguments: '-File C:\CleanpUpSite.ps1 test'
         WorkingDirectoryOptions: 'ApplicationDirectory'
         ScheduleTriggerType: 'DateTime'
-        DateTimeScheduleStartTime: '2024-01-11 ${{ parameters.currentHour+7 }}:${{ parameters.useTimeMinute }}:00'
+        DateTimeScheduleStartTime: '2024-01-11 ${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}:00'
         DateTimeScheduleFrequencyOptions: 'Once'
         ShouldScheduledTaskRunRepeatedlyString: false
         ScheduledTaskAccountToRunAsOptions: 'CustomAccount'
