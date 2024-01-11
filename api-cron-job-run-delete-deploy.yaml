@@ -72,6 +72,30 @@ spec:
             volumeMounts:
             - name: shared-volume
               mountPath: /shared
+          - name: Delete DNS Record
+            image: mcr.microsoft.com/powershell:latest
+            command: 
+            - "pwsh"
+            - "-command"
+            - |
+              $apiKey = "$(DNS_APIKEY)"
+              $apiSecret = "$(DNS_APISECRET)"
+              $domain = "$(DOMAIN)"
+              $recordAPIName = "$(deploymentName)api"
+              $recordWEBName = "$(deploymentName)web"
+
+              $headers = @{
+                  'Authorization' = "sso-key $($apiKey):$($apiSecret)"
+                  'Content-Type'  = 'application/json'
+              }
+              $apiEndpointAPI = "https://api.godaddy.com/v1/domains/$domain/records/A/$recordAPIName"
+              $apiEndpointWEB = "https://api.godaddy.com/v1/domains/$domain/records/A/$recordWEBName"
+
+              $responseAPI = Invoke-WebRequest -Uri $apiEndpointAPI -Method Delete -Headers $headers
+              $responseWEB = Invoke-WebRequest -Uri $apiEndpointWEB -Method Delete -Headers $headers
+              
+              Write-Output $responseAPI
+              Write-Output $responseWEB
           volumes:
           - name: secrets-volume
             secret:
