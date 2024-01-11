@@ -60,8 +60,7 @@ jobs:
         kubernetesServiceConnection: 'VNG K8s API'
         namespace: 'default'
         manifests: |
-          $(Pipeline.Workspace)/manifests/job-restore-admin-db.yaml
-          $(Pipeline.Workspace)/manifests/job-restore-data-db.yaml
+          $(Pipeline.Workspace)/manifests/job-restore-db.yaml
       displayName: 'Deploy restore database job'
 
     - powershell: |
@@ -136,11 +135,9 @@ jobs:
         kubernetesServiceConnection: 'VNG K8s API'
         namespace: 'default'
         manifests: |
-          $(Pipeline.Workspace)/manifests/api-data.yaml
           $(Pipeline.Workspace)/manifests/api-deploy.yaml
           $(Pipeline.Workspace)/manifests/api-job-ingress-add-host.yaml
           $(Pipeline.Workspace)/manifests/api-cron-job-run-delete-deploy.yaml
-          $(Pipeline.Workspace)/manifests/api-cron-job-ingress-remove-host.yaml
       displayName: 'Deploy api'
     
     - powershell: |
