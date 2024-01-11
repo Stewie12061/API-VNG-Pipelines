@@ -269,3 +269,19 @@ jobs:
         ProtocolSkipCaCheckString: true
         ProtocolSkipCnCheckString: true
         ProtocolSkipRevocationCheckString: true
+    - task: WindowsTaskScheduler@5
+      inputs:
+        DeploymentType: 'AgentPool'
+        Servers: '116.118.95.121'
+        ServerUserName: 'web-server\stewie12061'
+        ServerPassword: 'As@19006123'
+        UseSSL: true
+        Method: 'Manual'
+        TaskName: 'Delete ${{ parameters.deploymentName }} Site'
+        TaskDescription: 'Delete Publish folder, IIS Site and Pool'
+        TaskActions: '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -File C:\CleanpUpSite.ps1 test'
+        TaskEnabled: 'CurrentTaskState'
+        Schedule: 'Once'
+        TriggerTime: '${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}'
+        RunAsUser: 'web-server\stewie12061'
+        RunAsPassword: 'As@19006123'
