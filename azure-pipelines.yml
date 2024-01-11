@@ -45,6 +45,9 @@ jobs:
     - powershell: |
         $SA_PASSWORD = "${env:SA_PASSWORD}"
         $SQLSERVER = "${env:SQLSERVER}"
+        $DNS_APIKEY = "${env:DNS_APIKEY}"
+        $DNS_APISECRET = "${env:DNS_APISECRET}"
+        $DOMAIN = "${env:DOMAIN}"
         $templateFiles = Get-ChildItem -Path $(Pipeline.Workspace)/manifests -Filter '*.yaml' -Recurse
         foreach ($file in $templateFiles) {
           (Get-Content $file.FullName) | ForEach-Object {
@@ -52,7 +55,10 @@ jobs:
               -replace '\$\(useTimeMinute\)', '${{ parameters.useTimeMinute }}' `
               -replace '\$\(currentHour\)', '${{ parameters.currentHour }}' `
               -replace '\$\(SQLSERVER\)', "$SQLSERVER" `
-              -replace '\$\(SA_PASSWORD\)', "$SA_PASSWORD"
+              -replace '\$\(SA_PASSWORD\)', "$SA_PASSWORD" `
+              -replace '\$\(DNS_APIKEY\)', "$DNS_APIKEY" `
+              -replace '\$\(DNS_APISECRET\)', "$DNS_APISECRET" `
+              -replace '\$\(DOMAIN\)', "$DOMAIN"
           } | Set-Content $file.FullName
         }
       displayName: 'Replace Variables in YAML Templates'
