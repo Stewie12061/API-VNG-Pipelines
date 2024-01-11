@@ -105,7 +105,7 @@ jobs:
         $apiSecret = "${env:DNS_APISECRET}"
 
         # Set the domain and record information
-        $domain = "{env:DOMAIN}"
+        $domain = "${env:DOMAIN}"
         $recordType = "A"
         $recordName = "${{ parameters.deploymentName }}api"
         $recordData = "${env:DNS_RECORD_DATA_API}"
@@ -148,7 +148,7 @@ jobs:
         $apiSecret = "${env:DNS_APISECRET}"
 
         # Set the domain and record information
-        $domain = "{env:DOMAIN}"
+        $domain = "${env:DOMAIN}"
         $recordType = "A"
         $recordName = "${{ parameters.deploymentName }}web"
         $recordData = "${env:DNS_RECORD_DATA_WEB}"
