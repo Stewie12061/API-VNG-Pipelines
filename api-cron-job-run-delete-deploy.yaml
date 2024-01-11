@@ -26,7 +26,6 @@ spec:
               echo "INDEX: $INDEX"
               kubectl patch ingress ingress-route -n default --type json -p "[{'op': 'remove', 'path': '/spec/rules/$((INDEX-1))'}]" 
               
-              kubectl delete pvc api-pvc-$(deploymentName) &&
               kubectl delete deployment api-deploy-$(deploymentName) &&
               kubectl delete service api-clusterip-srv-$(deploymentName) &&
               sleep 60 &&
