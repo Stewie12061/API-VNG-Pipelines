@@ -41,15 +41,6 @@ jobs:
   displayName: 'Deploy API and WEB For ${{ parameters.deploymentName }}'
   steps:
     - powershell: |
-        param (
-          [string]$deploymentName = "${{ parameters.deploymentName }}",
-          [int]$expireMinute = ${{ parameters.expireMinute }},
-          [int]$expireHour = ${{ parameters.expireHour }},
-          [int]$expireDay = ${{ parameters.expireDay }},
-          [int]$expireMonth = ${{ parameters.expireMonth }},
-          [int]$expireYear = ${{ parameters.expireYear }}
-        )
-
         function Validate-DeploymentName {
             param (
                 [string]$name
@@ -101,19 +92,19 @@ jobs:
         }
 
         # Validate deploymentName
-        Validate-DeploymentName -name $deploymentName
+        Validate-DeploymentName -name ${{ parameters.deploymentName }}
 
         # Validate expireMinute
-        Validate-ExpireMinute -minute $expireMinute
+        Validate-ExpireMinute -minute ${{ parameters.expireMinute }}
 
         # Validate expireHour
-        Validate-ExpireHour -hour $expireHour
+        Validate-ExpireHour -hour ${{ parameters.expireHour }}
 
         # Validate expireDay
-        Validate-ExpireDay -day $expireDay
+        Validate-ExpireDay -day  ${{ parameters.expireDay }}
 
         # Validate expireMonth
-        Validate-ExpireMonth -month $expireMonth
+        Validate-ExpireMonth -month ${{ parameters.expireMonth }}
 
         Write-Host "All parameters passed validation successfully."
       displayName: "Check parameters validation"
