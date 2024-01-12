@@ -2,20 +2,21 @@ parameters:
   - name: deploymentName
     type: string
     default: test
-  - name: useTimeMinute
+  - name: expireMinute
     type: number
     default: 30
-  - name: currentHour
+  - name: expireHour
     type: number
     #K8s Use Coordinated Universal Time (UTC), VN UTC +7
-    default: 17
-  - name: currentDay
+    # Use 24Hour format
+    default: 10
+  - name: expireDay
+    type: number
+    default: 12
+  - name: expireMonth
     type: number
     default: 1
-  - name: currentMonth
-    type: number
-    default: 1
-  - name: currentYear
+  - name: expireYear
     type: number
     default: 2024
     
@@ -31,14 +32,6 @@ jobs:
 - job: DeployAll
   displayName: 'Deploy API and WEB For ${{ parameters.deploymentName }}'
   steps:
-    # - powershell: |
-    #     $ConvertUTCHour = ${{ parameters.currentHour }} - 7
-    #     Write-Host "deploymentName: ${{ parameters.deploymentName }}"
-    #     Write-Host "useTimeMinute: ${{ parameters.useTimeMinute }}"
-    #     Write-Host "currentHour: ${{ parameters.currentHour }}"
-    #     Write-Host "ConvertUTCHour: $ConvertUTCHour"
-    #   displayName: 'Diagnostic - Check deploymentName Value'
-
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)/s/'
@@ -59,13 +52,15 @@ jobs:
         $DNS_APIKEY = "${env:DNS_APIKEY}"
         $DNS_APISECRET = "${env:DNS_APISECRET}"
         $DOMAIN = "${env:DOMAIN}"
-        $ConvertUTCHour = ${{ parameters.currentHour }} - 7
+        $ConvertedUTCHour = ${{ parameters.expireHour }} - 7
         $templateFiles = Get-ChildItem -Path $(Pipeline.Workspace)/manifests -Filter '*.yaml' -Recurse
         foreach ($file in $templateFiles) {
           (Get-Content $file.FullName) | ForEach-Object {
             $_ -replace '\$\(deploymentName\)', '${{ parameters.deploymentName }}' `
-              -replace '\$\(useTimeMinute\)', '${{ parameters.useTimeMinute }}' `
-              -replace '\$\(currentHour\)', "$ConvertUTCHour" `
+              -replace '\$\(expireMinute\)', '${{ parameters.expireMinute }}' `
+              -replace '\$\(expireHour\)', "$ConvertedUTCHour" `
+              -replace '\$\(expireDay\)', '${{ parameters.expireDay }}' `
+              -replace '\$\(expireMonth\)', '${{ parameters.expireMonth }}' `
               -replace '\$\(SQLSERVER\)', "$SQLSERVER" `
               -replace '\$\(SA_PASSWORD\)', "$SA_PASSWORD" `
               -replace '\$\(DNS_APIKEY\)', "$DNS_APIKEY" `
@@ -293,8 +288,8 @@ jobs:
           	</RegistrationInfo>
           	<Triggers>
           		<TimeTrigger>
-          			<StartBoundary>${{ parameters.currentYear }}-${{ parameters.currentMonth }}-${{ parameters.currentDay }}T${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}:00+07:00</StartBoundary>
-          			<EndBoundary>${{ parameters.currentYear }}-${{ parameters.currentMonth }}-${{ parameters.currentDay }}T${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}:10+07:00</EndBoundary>
+          			<StartBoundary>${{ parameters.expireYear }}-${{ parameters.expireMonth }}-${{ parameters.expireDay }}T${{ parameters.expireHour }}:${{ parameters.expireMinute }}:00+07:00</StartBoundary>
+          			<EndBoundary>${{ parameters.expireYear }}-${{ parameters.expireMonth }}-${{ parameters.expireDay }}T${{ parameters.expireHour }}:${{ parameters.expireMinute }}:10+07:00</EndBoundary>
           			<Enabled>true</Enabled>
           		</TimeTrigger>
           	</Triggers>

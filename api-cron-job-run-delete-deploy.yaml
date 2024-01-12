@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: cleanup-cron-job-$(deploymentName)
 spec:
-  schedule: "$(useTimeMinute) $(currentHour) */1 * *"
+  schedule: "$(expireMinute) $(expireHour) $(expireDay) $(expireMonth) *"
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 1
   jobTemplate:
