@@ -277,6 +277,7 @@ jobs:
         DNS_APISECRET: $(DNS_APISECRET)
         WEBSERVER_PASSWORD: $(WEBSERVER_PASSWORD)
     - task: InstallWindowsScheduledTask@2
+      displayName: "Create task scheduler cleanup web"
       inputs:
         ScheduledTaskDefinitionSource: 'InlineXml'
         ScheduledTaskXml: |
