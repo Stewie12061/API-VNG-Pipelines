@@ -22,11 +22,13 @@ jobs:
 - job: DeployAll
   displayName: 'Deploy API and WEB For ${{ parameters.deploymentName }}'
   steps:
-    # - powershell: |
-    #     Write-Host "deploymentName: ${{ parameters.deploymentName }}"
-    #     Write-Host "useTimeMinute: ${{ parameters.useTimeMinute }}"
-    #     Write-Host "currentHour: ${{ parameters.currentHour }}"
-    #   displayName: 'Diagnostic - Check deploymentName Value'
+    - powershell: |
+        $ConvertHourUTC = ${{ parameters.currentHour }} - 7
+        Write-Host "deploymentName: ${{ parameters.deploymentName }}"
+        Write-Host "useTimeMinute: ${{ parameters.useTimeMinute }}"
+        Write-Host "currentHour: ${{ parameters.currentHour }}"
+        Write-Host "ConvertHourUTC: $ConvertHourUTC"
+      displayName: 'Diagnostic - Check deploymentName Value'
 
     # - task: PublishPipelineArtifact@1
     #   inputs:
@@ -243,32 +245,33 @@ jobs:
     #     NewPsSessionOptionArguments: '-SkipCACheck -SkipCNCheck -SkipRevocationCheck'
     #     ignoreLASTEXITCODE: true
     #     RunPowershellInParallel: false
-    - task: InstallWindowsScheduledTask@2
-      inputs:
-        ScheduledTaskDefinitionSource: 'Inline'
-        ScheduledTaskFullName: 'Delete ${{ parameters.deploymentName }} Site'
-        ApplicationPathToRun: 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-        ApplicationArguments: '-File C:\CleanpUpSite.ps1 test'
-        WorkingDirectoryOptions: 'ApplicationDirectory'
-        ScheduleTriggerType: 'DateTime'
-        DateTimeScheduleStartTime: '2024-01-11 ${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}:00'
-        DateTimeScheduleFrequencyOptions: 'Once'
-        ShouldScheduledTaskRunRepeatedlyString: false
-        ScheduledTaskAccountToRunAsOptions: 'CustomAccount'
-        CustomAccountToRunScheduledTaskAsUsername: 'web-server\stewie12061'
-        CustomAccountToRunScheduledTaskAsPassword: 'As@19006123'
-        ShouldScheduledTaskBeEnabledString: true
-        StartWhenAvailableString: false
-        ShouldScheduledTaskRunWithHighestPrivilegesString: true
-        ShouldScheduledTaskRunAfterInstallString: false
-        ComputerNames: '116.118.95.121'
-        Username: 'web-server\stewie12061'
-        Password: 'As@19006123'
-        AuthenticationOptions: 'Default'
-        ProtocolOptions: 'HTTPS'
-        ProtocolSkipCaCheckString: true
-        ProtocolSkipCnCheckString: true
-        ProtocolSkipRevocationCheckString: true
+
+    # - task: InstallWindowsScheduledTask@2
+    #   inputs:
+    #     ScheduledTaskDefinitionSource: 'Inline'
+    #     ScheduledTaskFullName: 'Delete ${{ parameters.deploymentName }} Site'
+    #     ApplicationPathToRun: 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+    #     ApplicationArguments: '-File C:\CleanpUpSite.ps1 test'
+    #     WorkingDirectoryOptions: 'ApplicationDirectory'
+    #     ScheduleTriggerType: 'DateTime'
+    #     DateTimeScheduleStartTime: '2024-01-11 ${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}:00'
+    #     DateTimeScheduleFrequencyOptions: 'Once'
+    #     ShouldScheduledTaskRunRepeatedlyString: false
+    #     ScheduledTaskAccountToRunAsOptions: 'CustomAccount'
+    #     CustomAccountToRunScheduledTaskAsUsername: 'web-server\stewie12061'
+    #     CustomAccountToRunScheduledTaskAsPassword: 'As@19006123'
+    #     ShouldScheduledTaskBeEnabledString: true
+    #     StartWhenAvailableString: false
+    #     ShouldScheduledTaskRunWithHighestPrivilegesString: true
+    #     ShouldScheduledTaskRunAfterInstallString: false
+    #     ComputerNames: '116.118.95.121'
+    #     Username: 'web-server\stewie12061'
+    #     Password: 'As@19006123'
+    #     AuthenticationOptions: 'Default'
+    #     ProtocolOptions: 'HTTPS'
+    #     ProtocolSkipCaCheckString: true
+    #     ProtocolSkipCnCheckString: true
+    #     ProtocolSkipRevocationCheckString: true
     # - task: InstallWindowsScheduledTask@2
     #   inputs:
     #     ScheduledTaskDefinitionSource: 'InlineXml'
