@@ -218,9 +218,9 @@ jobs:
         InlineScript: |
           # Define variables
           $folderName="${{ parameters.deploymentName }}"
-          Start-Process "robocopy.exe" -ArgumentList "C:\Publish0", "C:\Web\$folderName", "/E", "/MT:4", "/np", "/ndl", "/nfl", "/nc", "/ns" -Wait
+          Start-Process "robocopy.exe" -ArgumentList "C:\Publish0", "C:\Web Demo\$folderName", "/E", "/MT:4", "/np", "/ndl", "/nfl", "/nc", "/ns" -Wait
           $siteName = "$folderName"
-          $publishFolder = "C:\Web\$folderName"
+          $publishFolder = "C:\Web Demo\$folderName"
           $applicationPoolName = "$folderName"
           $bindingIPAddress = "*"
           $bindingPort = "80"
@@ -234,12 +234,6 @@ jobs:
           # Import the WebAdministration module
           Import-Module WebAdministration
 
-          # Check if the website already exists
-          if (Test-Path "IIS:\Sites\$siteName") {
-              Write-Host "Website '$siteName' already exists. Exiting."
-              exit
-          }
-
           # Create Application Pool
           New-WebAppPool -Name $applicationPoolName
 
@@ -249,7 +243,7 @@ jobs:
           Write-Host "Website '$siteName' created successfully."
 
           # Define the path to the web.config file
-          $configFilePath = "C:\Web\$folderName\web.config"
+          $configFilePath = "C:\Web Demo\$folderName\web.config"
 
           # Check if the file exists
           if (Test-Path $configFilePath) {
