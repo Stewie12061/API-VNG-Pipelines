@@ -316,9 +316,9 @@ jobs:
         InlineScript: |          
           $folderName="${{ parameters.deploymentName }}"
           $SA_PASSWORD=$env:SA_PASSWORD
-          $SQLSERVER="$(SQLSERVER)"
-          Write-Host "SA_PASSWORD: $SA_PASSWORD"
-          Write-Host "SQLSERVER: $SQLSERVER"
+          $SQLSERVER="$env:SQLSERVER"
+          Write-Host "DEBUG: SA_PASSWORD=$SA_PASSWORD"
+          Write-Host "DEBUG: SQLSERVER=$SQLSERVER"
           # # Create publish folder
           # Start-Process "robocopy.exe" -ArgumentList "C:\Publish0", "C:\WebDemo\$folderName", "/E", "/MT:4", "/np", "/ndl", "/nfl", "/nc", "/ns" -Wait
           # $siteName = "$folderName"
