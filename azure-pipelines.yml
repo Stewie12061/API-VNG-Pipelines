@@ -1,20 +1,28 @@
 parameters:
   - name: deploymentName
     type: string
+    # contain at most 63 characters
+    # contain only lowercase alphanumeric characters or '-'
+    # start with an alphabetic character
+    # end with an alphanumeric characte
     default: test
   - name: expireMinute
     type: number
+    # allowed values 0-59
     default: 30
   - name: expireHour
     type: number
     #K8s Use Coordinated Universal Time (UTC), VN UTC +7
     # Use 24Hour format
+    # allowed values 0-23
     default: 10
   - name: expireDay
     type: number
+    # allowed values 1-31
     default: 12
   - name: expireMonth
     type: number
+    # allowed values 1-12
     default: 1
   - name: expireYear
     type: number
@@ -32,6 +40,84 @@ jobs:
 - job: DeployAll
   displayName: 'Deploy API and WEB For ${{ parameters.deploymentName }}'
   steps:
+    - powershell: |
+        param (
+          [string]$deploymentName = ${{ parameters.deploymentName }},
+          [int]$expireMinute = ${{ parameters.expireMinute }},
+          [int]$expireHour = ${{ parameters.expireHour }},
+          [int]$expireDay = ${{ parameters.expireDay }},
+          [int]$expireMonth = ${{ parameters.expireMonth }},
+          [int]$expireYear = ${{ parameters.expireYear }}
+        )
+
+        function Validate-DeploymentName {
+            param (
+                [string]$name
+            )
+            if ($name -notmatch "^[a-z][a-z0-9-]{0,61}[a-z0-9]$") {
+                Write-Host "##vso[task.logissue type=error]Invalid deploymentName. It must contain at most 63 characters, only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character."
+                exit 1
+            }
+        }
+
+        function Validate-ExpireMinute {
+            param (
+                [int]$minute
+            )
+            if ($minute -lt 0 -or $minute -gt 59) {
+                Write-Host "##vso[task.logissue type=error]Invalid expireMinute. Allowed values are 0-59."
+                exit 1
+            }
+        }
+
+        function Validate-ExpireHour {
+            param (
+                [int]$hour
+            )
+            if ($hour -lt 0 -or $hour -gt 23) {
+                Write-Host "##vso[task.logissue type=error]Invalid expireHour. Allowed values are 0-23."
+                exit 1
+            }
+        }
+
+        function Validate-ExpireDay {
+            param (
+                [int]$day
+            )
+            if ($day -lt 1 -or $day -gt 31) {
+                Write-Host "##vso[task.logissue type=error]Invalid expireDay. Allowed values are 1-31."
+                exit 1
+            }
+        }
+
+        function Validate-ExpireMonth {
+            param (
+                [int]$month
+            )
+            if ($month -lt 1 -or $month -gt 12) {
+                Write-Host "##vso[task.logissue type=error]Invalid expireMonth. Allowed values are 1-12."
+                exit 1
+            }
+        }
+
+        # Validate deploymentName
+        Validate-DeploymentName -name $deploymentName
+
+        # Validate expireMinute
+        Validate-ExpireMinute -minute $expireMinute
+
+        # Validate expireHour
+        Validate-ExpireHour -hour $expireHour
+
+        # Validate expireDay
+        Validate-ExpireDay -day $expireDay
+
+        # Validate expireMonth
+        Validate-ExpireMonth -month $expireMonth
+
+        Write-Host "All parameters passed validation successfully."
+      displayName: "Check parameters validation"
+
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)/s/'
@@ -74,26 +160,18 @@ jobs:
         $expireYear = ${{ parameters.expireYear }}
         $utcTime = ConvertToUtc -day $expireDay -month $expireMonth -year $expireYear -hour $expireHour -minute $expireMinute
         # Extract and display components separately
-        $utcMinute = $utcTime.Minute
         $utcHour = $utcTime.Hour
         $utcDay = $utcTime.Day
         $utcMonth = $utcTime.Month
-        $utcYear = $utcTime.Year
-
-        Write-Host "Minute: $utcMinute"
-        Write-Host "Hour: $expireHour  $utcHour"
-        Write-Host "Day: $expireDay $utcDay"
-        Write-Host "Month: $expireMonth $utcMonth"
-        Write-Host "Year: $expireYear $utcYear"
         
         $templateFiles = Get-ChildItem -Path $(Pipeline.Workspace)/manifests -Filter '*.yaml' -Recurse
         foreach ($file in $templateFiles) {
           (Get-Content $file.FullName) | ForEach-Object {
             $_ -replace '\$\(deploymentName\)', '${{ parameters.deploymentName }}' `
               -replace '\$\(expireMinute\)', '${{ parameters.expireMinute }}' `
-              -replace '\$\(expireHour\)', "$ConvertedUTCHour" `
-              -replace '\$\(expireDay\)', "" `
-              -replace '\$\(expireMonth\)', "" `
+              -replace '\$\(expireHour\)', "$utcHour" `
+              -replace '\$\(expireDay\)', "$utcDay" `
+              -replace '\$\(expireMonth\)', "$utcMonth" `
               -replace '\$\(SQLSERVER\)', "$SQLSERVER" `
               -replace '\$\(SA_PASSWORD\)', "$SA_PASSWORD" `
               -replace '\$\(DNS_APIKEY\)', "$DNS_APIKEY" `
@@ -107,7 +185,7 @@ jobs:
         DNS_APISECRET: $(DNS_APISECRET)
         WEBSERVER_PASSWORD: $(WEBSERVER_PASSWORD)
         
-      displayName: 'Replace Variables in YAML Templates'
+      displayName: 'Convert UTC and Replace Variables in YAML Templates'
 
     # - task: KubernetesManifest@1
     #   inputs:
