@@ -80,7 +80,6 @@ jobs:
         $utcMonth = $utcTime.Month
         $utcYear = $utcTime.Year
 
-        Write-Host "Components:"
         Write-Host "Minute: $utcMinute"
         Write-Host "Hour: $expireHour  $utcHour"
         Write-Host "Day: $expireDay $utcDay"
