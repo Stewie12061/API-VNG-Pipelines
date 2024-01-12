@@ -284,8 +284,8 @@ jobs:
           	</RegistrationInfo>
           	<Triggers>
           		<TimeTrigger>
-          			<StartBoundary>2024-01-11T${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}:00+07:00</StartBoundary>
-          			<EndBoundary>2024-01-11T${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}:10+07:00</EndBoundary>
+          			<StartBoundary>2024-01-12T${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}:00+07:00</StartBoundary>
+          			<EndBoundary>2024-01-12T${{ parameters.currentHour }}:${{ parameters.useTimeMinute }}:10+07:00</EndBoundary>
           			<Enabled>true</Enabled>
           		</TimeTrigger>
           	</Triggers>
