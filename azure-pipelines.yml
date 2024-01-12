@@ -72,7 +72,7 @@ jobs:
         $expireDay = ${{ parameters.expireDay }}
         $expireMonth = ${{ parameters.expireMonth }}
         $expireYear = ${{ parameters.expireYear }}
-        $utcTime = ConvertToUtc -day $expireDay -month $expireMonth -year $expireYear -hour $hour -minute $expireMinute
+        $utcTime = ConvertToUtc -day $expireDay -month $expireMonth -year $expireYear -hour $expireHour -minute $expireMinute
         # Extract and display components separately
         $utcMinute = $utcTime.Minute
         $utcHour = $utcTime.Hour
