@@ -42,7 +42,7 @@ jobs:
   steps:
     - powershell: |
         param (
-          [string]$deploymentName = ${{ parameters.deploymentName }},
+          [string]$deploymentName = "${{ parameters.deploymentName }}",
           [int]$expireMinute = ${{ parameters.expireMinute }},
           [int]$expireHour = ${{ parameters.expireHour }},
           [int]$expireDay = ${{ parameters.expireDay }},
