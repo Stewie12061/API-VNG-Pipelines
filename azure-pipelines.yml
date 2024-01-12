@@ -313,14 +313,14 @@ jobs:
         Machines: '$(WEB_SERVER_IP):5986'
         UserName: '$(WEBSERVER_USERNAME)'
         UserPassword: '$(WEBSERVER_PASSWORD)'
-        InlineScript: |
-          # Define variables
+        InlineScript: |          
           $folderName="${{ parameters.deploymentName }}"
           $SA_PASSWORD="${env:SA_PASSWORD}"
           $SQLSERVER="${env:SQLSERVER}"
-          Start-Process "robocopy.exe" -ArgumentList "C:\Publish0", "C:\Web Demo\$folderName", "/E", "/MT:4", "/np", "/ndl", "/nfl", "/nc", "/ns" -Wait
+          # Create publish folder
+          Start-Process "robocopy.exe" -ArgumentList "C:\Publish0", "C:\WebDemo\$folderName", "/E", "/MT:4", "/np", "/ndl", "/nfl", "/nc", "/ns" -Wait
           $siteName = "$folderName"
-          $publishFolder = "C:\Web Demo\$folderName"
+          $publishFolder = "C:\WebDemo\$folderName"
           $applicationPoolName = "$folderName"
           $bindingIPAddress = "*"
           $bindingPort = "80"
@@ -343,7 +343,7 @@ jobs:
           Write-Host "Website '$siteName' created successfully."
 
           # Define the path to the web.config file
-          $configFilePath = "C:\Web Demo\$folderName\web.config"
+          $configFilePath = "C:\WebDemo\$folderName\web.config"
 
           # Check if the file exists
           if (Test-Path $configFilePath) {
