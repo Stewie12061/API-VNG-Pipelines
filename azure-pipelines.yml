@@ -67,11 +67,12 @@ jobs:
         $DNS_APISECRET = "${env:DNS_APISECRET}"
         $DOMAIN = "${env:DOMAIN}"
 
+        $expireMinute = ${{ parameters.expireMinute }}
         $expireHour = ${{ parameters.expireHour }}
         $expireDay = ${{ parameters.expireDay }}
         $expireMonth = ${{ parameters.expireMonth }}
         $expireYear = ${{ parameters.expireYear }}
-        $utcTime = ConvertToUtc -day $expireDay -month $expireMonth -year $expireYear -hour $hour -minute $minute
+        $utcTime = ConvertToUtc -day $expireDay -month $expireMonth -year $expireYear -hour $hour -minute $expireMinute
         # Extract and display components separately
         $utcMinute = $utcTime.Minute
         $utcHour = $utcTime.Hour
@@ -81,10 +82,10 @@ jobs:
 
         Write-Host "Components:"
         Write-Host "Minute: $utcMinute"
-        Write-Host "Hour: $utcHour"
-        Write-Host "Day: $utcDay"
-        Write-Host "Month: $utcMonth"
-        Write-Host "Year: $utcYear"
+        Write-Host "Hour: $expireHour  $utcHour"
+        Write-Host "Day: $expireDay $utcDay"
+        Write-Host "Month: $expireMonth $utcMonth"
+        Write-Host "Year: $expireYear $utcYear"
         
         $templateFiles = Get-ChildItem -Path $(Pipeline.Workspace)/manifests -Filter '*.yaml' -Recurse
         foreach ($file in $templateFiles) {
