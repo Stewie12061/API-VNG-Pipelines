@@ -272,7 +272,7 @@ jobs:
     #     ProtocolSkipCaCheckString: true
     #     ProtocolSkipCnCheckString: true
     #     ProtocolSkipRevocationCheckString: true
-    # - task: InstallWindowsScheduledTask@2
+    - task: InstallWindowsScheduledTask@2
       inputs:
         ScheduledTaskDefinitionSource: 'InlineXml'
         ScheduledTaskXml: |
