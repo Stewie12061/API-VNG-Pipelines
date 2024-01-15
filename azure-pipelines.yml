@@ -171,6 +171,7 @@ jobs:
         DNS_APIKEY: $(DNS_APIKEY)
         DNS_APISECRET: $(DNS_APISECRET)
         WEBSERVER_PASSWORD: $(WEBSERVER_PASSWORD)
+        SQLSERVER: $(SQLSERVER)
         
       displayName: 'Convert UTC and Replace Variables in YAML Templates'
 
