@@ -81,8 +81,8 @@ spec:
               $apiKey = "$(DNS_APIKEY)"
               $apiSecret = "$(DNS_APISECRET)"
               $domain = "$(DOMAIN)"
-              $recordAPIName = "$(deploymentName)api"
-              $recordWEBName = "$(deploymentName)web"
+              $recordAPIName = "$(deploymentName)-api"
+              $recordWEBName = "$(deploymentName)-web"
 
               $headers = @{
                   'Authorization' = "sso-key $($apiKey):$($apiSecret)"
