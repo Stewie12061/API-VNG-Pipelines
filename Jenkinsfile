@@ -104,7 +104,7 @@ pipeline {
         }
         stage('Archive Artifact'){
             steps {
-                archiveArtifacts artifacts: '**/*.yaml', followSymlinks: false
+                archiveArtifacts artifacts: '**/*', followSymlinks: false
             }
         }
         stage('UnArchive Artifacrt'){
