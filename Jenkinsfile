@@ -165,7 +165,7 @@ pipeline {
                     $templateFiles = Get-ChildItem -Path $WORKSPACE -Filter '*.yaml' -Recurse
                     foreach ($file in $templateFiles) {
                         (Get-Content $file.FullName) | ForEach-Object {
-                            $_ -replace '\\$\\(deploymentName)\\', "$deploymentName" `
+                            $_ -replace '\\$\\(deploymentName\\)', "$deploymentName" `
                             -replace '\\$\\(expireMinute\\)', "$expireMinute" `
                             -replace '\\$\\(expireHour\\)', "$utcHour" `
                             -replace '\\$\\(expireDay\\)', "$utcDay" `
