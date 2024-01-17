@@ -110,7 +110,7 @@ pipeline {
         }
         stage('Archive Artifact'){
             steps {
-                archiveArtifacts artifacts: '**/*', followSymlinks: false
+                archiveArtifacts artifacts: '**/*.yaml', followSymlinks: false
             }
         }
         stage('Unarchive to Specific Folder') {
@@ -162,7 +162,7 @@ pipeline {
 
                     $WORKSPACE = "$env.WORKSPACE"
 
-                    $templateFiles = "Get-ChildItem -Path $WORKSPACE/manifests -Filter '*.yaml' -Recurse"
+                    $templateFiles = "Get-ChildItem -Path $WORKSPACE/../manifests -Filter '*.yaml' -Recurse"
                     foreach ($file in $templateFiles) {
                         (Get-Content $file.FullName) | ForEach-Object {
                             $_ -replace '$(deploymentName)', "$deploymentName"
