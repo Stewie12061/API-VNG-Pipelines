@@ -34,6 +34,8 @@ pipeline {
             steps {
                 script{
                     def powershellScript = '''
+                            $variable test = "$env:DNS_APISECRET"
+                            Write-Host $variable
                             $deploymentName = "$env:deploymentName"
                             $expireMinute = "$env:expireMinute"
                             $expireHour = "$env:expireHour"
@@ -118,6 +120,58 @@ pipeline {
                 powershell('kubectl get pods')
             }
         }
+        // stage('Convert UTC and Replace Variables in YAML Templates'){
+        //     step{
+        //         def convertTimeReplaceScript = '''
+        //             function ConvertToUtc {
+        //                 param(
+        //                     [int]$day,
+        //                     [int]$month,
+        //                     [int]$year,
+        //                     [int]$hour,
+        //                     [int]$minute
+        //                 )
+
+        //                 $localTime = Get-Date -Year $year -Month $month -Day $day -Hour $hour -Minute $minute -Second 0
+        //                 $utcTime = $localTime.ToUniversalTime()
+
+        //                 return $utcTime
+        //             }
+        //             $SA_PASSWORD = "${env:SA_PASSWORD}"
+        //             $SQLSERVER = "${env:SQLSERVER}"
+        //             $DNS_APIKEY = "${env:DNS_APIKEY}"
+        //             $DNS_APISECRET = "${env:DNS_APISECRET}"
+        //             $DOMAIN = "${env:DOMAIN}"
+
+        //             $expireMinute = ${{ parameters.expireMinute }}
+        //             $expireHour = ${{ parameters.expireHour }}
+        //             $expireDay = ${{ parameters.expireDay }}
+        //             $expireMonth = ${{ parameters.expireMonth }}
+        //             $expireYear = ${{ parameters.expireYear }}
+        //             $utcTime = ConvertToUtc -day $expireDay -month $expireMonth -year $expireYear -hour $expireHour -minute $expireMinute
+        //             # Extract and display components separately
+        //             $utcHour = $utcTime.Hour
+        //             $utcDay = $utcTime.Day
+        //             $utcMonth = $utcTime.Month
+                    
+        //             $templateFiles = Get-ChildItem -Path $(Pipeline.Workspace)/manifests -Filter '*.yaml' -Recurse
+        //             foreach ($file in $templateFiles) {
+        //             (Get-Content $file.FullName) | ForEach-Object {
+        //                 $_ -replace '\$\(deploymentName\)', '${{ parameters.deploymentName }}' `
+        //                 -replace '\$\(expireMinute\)', '${{ parameters.expireMinute }}' `
+        //                 -replace '\$\(expireHour\)', "$utcHour" `
+        //                 -replace '\$\(expireDay\)', "$utcDay" `
+        //                 -replace '\$\(expireMonth\)', "$utcMonth" `
+        //                 -replace '\$\(SQLSERVER\)', "$SQLSERVER" `
+        //                 -replace '\$\(SA_PASSWORD\)', "$SA_PASSWORD" `
+        //                 -replace '\$\(DNS_APIKEY\)', "$DNS_APIKEY" `
+        //                 -replace '\$\(DNS_APISECRET\)', "$DNS_APISECRET" `
+        //                 -replace '\$\(DOMAIN\)', "$DOMAIN"
+        //             } | Set-Content $file.FullName
+        //             }
+        //         '''
+        //     }
+        // }
     }
 
     post {
