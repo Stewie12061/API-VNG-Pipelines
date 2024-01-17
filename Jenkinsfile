@@ -26,69 +26,80 @@ pipeline {
     stages {
         stage('Validate Parameters') {
             steps {
-                powershell '''function Validate-DeploymentName {
-                    param (
-                        [string]$name
-                    )
-                    if ($name -notmatch "^[a-z][a-z0-9-]{0,61}[a-z0-9]$") {
-                        Write-Host $name + " ?"
-                        Write-Host "##vso[task.logissue type=error]Invalid deploymentName. It must contain at most 63 characters, only lowercase alphanumeric characters or \'-\', start with an alphabetic character, and end with an alphanumeric character."
-                        exit 1
-                    }
+                script{
+                    def powershellScript = '''
+                            $deploymentName = "$env:deploymentName"
+                            $expireMinute = "$env:expireMinute"
+                            $expireHour = "$env:expireHour"
+                            $expireDay = "$env:expireDay"
+                            $expireMonth = "$env:expireMonth"
+
+                            function Validate-DeploymentName {
+                                param (
+                                    [string]$name
+                                )
+                                if ($name -notmatch "^[a-z][a-z0-9-]{0,61}[a-z0-9]$") {
+                                    Write-Host $name + " ?"
+                                    Write-Host "##vso[task.logissue type=error]Invalid deploymentName. It must contain at most 63 characters, only lowercase alphanumeric characters or \'-\', start with an alphabetic character, and end with an alphanumeric character."
+                                    exit 1
+                                }
+                            }
+                            function Validate-ExpireMinute {
+                                param (
+                                    [int]$minute
+                                )
+                                if ($minute -lt 0 -or $minute -gt 59) {
+                                    Write-Host "##vso[task.logissue type=error]Invalid expireMinute. Allowed values are 0-59."
+                                    exit 1
+                                }
+                            }
+                            function Validate-ExpireHour {
+                                param (
+                                    [int]$hour
+                                )
+                                if ($hour -lt 0 -or $hour -gt 23) {
+                                    Write-Host "##vso[task.logissue type=error]Invalid expireHour. Allowed values are 0-23."
+                                    exit 1
+                                }
+                            }
+                            function Validate-ExpireDay {
+                                param (
+                                    [int]$day
+                                )
+                                if ($day -lt 1 -or $day -gt 31) {
+                                    Write-Host "##vso[task.logissue type=error]Invalid expireDay. Allowed values are 1-31."
+                                    exit 1
+                                }
+                            }
+                            function Validate-ExpireMonth {
+                                param (
+                                    [int]$month
+                                )
+                                if ($month -lt 1 -or $month -gt 12) {
+                                    Write-Host "##vso[task.logissue type=error]Invalid expireMonth. Allowed values are 1-12."
+                                    exit 1
+                                }
+                            }
+
+                            # Validate deploymentName
+                            Validate-DeploymentName -name $deploymentName
+
+                            # Validate expireMinute
+                            Validate-ExpireMinute -minute $expireMinute
+
+                            # Validate expireHour
+                            Validate-ExpireHour -hour $expireHour
+
+                            # Validate expireDay
+                            Validate-ExpireDay -day  $expireDay
+
+                            # Validate expireMonth
+                            Validate-ExpireMonth -month $expireMonth
+
+                            Write-Host "All parameters passed validation successfully."
+                    '''
+                    powershell(script: powershellScript)
                 }
-                function Validate-ExpireMinute {
-                    param (
-                        [int]$minute
-                    )
-                    if ($minute -lt 0 -or $minute -gt 59) {
-                        Write-Host "##vso[task.logissue type=error]Invalid expireMinute. Allowed values are 0-59."
-                        exit 1
-                    }
-                }
-                function Validate-ExpireHour {
-                    param (
-                        [int]$hour
-                    )
-                    if ($hour -lt 0 -or $hour -gt 23) {
-                        Write-Host "##vso[task.logissue type=error]Invalid expireHour. Allowed values are 0-23."
-                        exit 1
-                    }
-                }
-                function Validate-ExpireDay {
-                    param (
-                        [int]$day
-                    )
-                    if ($day -lt 1 -or $day -gt 31) {
-                        Write-Host "##vso[task.logissue type=error]Invalid expireDay. Allowed values are 1-31."
-                        exit 1
-                    }
-                }
-                function Validate-ExpireMonth {
-                    param (
-                        [int]$month
-                    )
-                    if ($month -lt 1 -or $month -gt 12) {
-                        Write-Host "##vso[task.logissue type=error]Invalid expireMonth. Allowed values are 1-12."
-                        exit 1
-                    }
-                }
-
-                # Validate deploymentName
-                Validate-DeploymentName -name ${env:params.deploymentName}
-
-                # Validate expireMinute
-                Validate-ExpireMinute -minute ${env:parameters.expireMinute}
-
-                # Validate expireHour
-                Validate-ExpireHour -hour ${env:params.expireHour}
-
-                # Validate expireDay
-                Validate-ExpireDay -day  ${env:params.expireDay}
-
-                # Validate expireMonth
-                Validate-ExpireMonth -month ${env:params.expireMonth}
-
-                Write-Host "All parameters passed validation successfully."'''
             }
         }
         stage('Archive Artifact'){
