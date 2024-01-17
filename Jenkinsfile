@@ -116,7 +116,7 @@ pipeline {
         stage('Unarchive to Specific Folder') {
             steps {
                 // Unarchive the artifacts to a specific folder
-                unarchive mapping: ['*': '${env.WORKSPACE)/manifests']
+                unarchive mapping: ['*': '../manifests']
             }
         }
         stage('Lists Pods'){
