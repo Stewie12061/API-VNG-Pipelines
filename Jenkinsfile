@@ -34,7 +34,7 @@ pipeline {
             steps {
                 script{
                     def powershellScript = '''
-                            $variable test = "$env:DNS_APISECRET"
+                            $variable = "$env:DNS_APISECRET"
                             Write-Host $variable
                             $deploymentName = "$env:deploymentName"
                             $expireMinute = "$env:expireMinute"
