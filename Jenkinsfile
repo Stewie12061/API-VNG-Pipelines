@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5')
+    }
+
     environment {
         DNS_APIKEY = 'gHzYh74VJWFj_GeraDcnduffMvAVVGiDnZP'
         DNS_APISECRET = 'JJA6UeV6NoQAc7SSb8hr3W'
