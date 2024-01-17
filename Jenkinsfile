@@ -160,7 +160,9 @@ pipeline {
                     $utcDay = $utcTime.Day
                     $utcMonth = $utcTime.Month
 
-                    $templateFiles = Get-ChildItem -Path ${env.WORKSPACE}/manifests -Filter '*.yaml' -Recurse
+                    $WORKSPACE = "$env.WORKSPACE"
+
+                    $templateFiles = "Get-ChildItem -Path $WORKSPACE/manifests -Filter '*.yaml' -Recurse"
                     foreach ($file in $templateFiles) {
                         (Get-Content $file.FullName) | ForEach-Object {
                             $_ -replace '$(deploymentName)', "$deploymentName"
