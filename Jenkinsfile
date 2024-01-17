@@ -16,11 +16,11 @@ pipeline {
 
     parameters {
         string(name: 'deploymentName', defaultValue: 'test', description: 'Deployment Name')
-        number(name: 'expireMinute', defaultValue: 30, description: 'Expiration Minute (0-59)')
-        number(name: 'expireHour', defaultValue: 17, description: 'Expiration Hour (0-23)')
-        number(name: 'expireDay', defaultValue: 1, description: 'Expiration Day (1-31)')
-        number(name: 'expireMonth', defaultValue: 1, description: 'Expiration Month (1-12)')
-        number(name: 'expireYear', defaultValue: 2024, description: 'Expiration Year')
+        string(name: 'expireMinute', defaultValue: '30', description: 'Expiration Minute (0-59)')
+        string(name: 'expireHour', defaultValue: '17', description: 'Expiration Hour (0-23)')
+        string(name: 'expireDay', defaultValue: '1', description: 'Expiration Day (1-31)')
+        string(name: 'expireMonth', defaultValue: '1', description: 'Expiration Month (1-12)')
+        string(name: 'expireYear', defaultValue: '2024', description: 'Expiration Year')
     }
 
     stages {
