@@ -3,6 +3,25 @@ pipeline {
 
     options {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5')
+
+        withKubeConfig(caCertificate: '''-----BEGIN CERTIFICATE-----
+        MIIC3TCCAcWgAwIBAgIRALJud0lsqUg7rMEei25f9MIwDQYJKoZIhvcNAQELBQAw
+        FjEUMBIGA1UEAwwLQVBJLUNsdXN0ZXIwHhcNMjQwMTA4MTE0OTUxWhcNMjkwMTA3
+        MTE0OTUxWjAWMRQwEgYDVQQDDAtBUEktQ2x1c3RlcjCCASIwDQYJKoZIhvcNAQEB
+        BQADggEPADCCAQoCggEBAL5or11a+ieTf9tFCC3/uIomU34fTH5gE1PENu4g2fM/
+        dH7nH+gtt6qnhi8AnvRpTfeNzBBHQ71t+rJjYv9VKO36hxL647v0zueh52kg6ogo
+        onkmXuJdsaZKeRA3w4LYukE+cRTG4mwFM9/VnVB6FQT6tLOfHfcigJWzBw/u/XTQ
+        EpNjd5PLf8m56zahlzfsSd7HSpCdyzBQVzvUkkVmbq/qPc6r6knbLjrKwjIsRh8j
+        uRXPRHRNRgzB2lLjkN3tTfaXozE7/z7/6pIRcOAbR1VzlujUWQRbuzx+Aru/JQfO
+        0RUd2zeFsRwOFiWhRJt2hbH5ECQcsuVEl1uoFqNJvfkCAwEAAaMmMCQwEgYDVR0T
+        AQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAgQwDQYJKoZIhvcNAQELBQADggEB
+        AFwnrjQlYX8gfyxJN8JsIkU8BQNlUWy2xZSpx5nNzSxxwJXm1uRtley9kfpf4P4g
+        QmwVzV9iV465z6Mmh5TRxiYVM/3d1Q0wfvwf9t60z1PW0F9jzLa3zjTF3Evdz6nL
+        ys0BWDlEcIMiIVKUmdNiYle23p+bHDRsr4fm5IphxtHy/rbfvije5rNDs5gXVScd
+        3gJrqa5IszbxZbvLNYvu97iFitxPUIZSplgTz0aoeATCBh/pwBNPbxGsnvF1Yzs5
+        7rNj8Rg6g6Ph+UvRTm2sffoDE7oJmo4Zr08QeWta8chwS95qS6XcpCEyXadiDSde
+        g8TnRLpn/QAjK/O0CRMUQMA=
+        -----END CERTIFICATE-----''', clusterName: 'API-Cluster', contextName: 'default', credentialsId: 'f4826e5c-a7bb-4ace-ab83-1d91a7b14313', namespace: 'default', restrictKubeConfigAccess: false, serverUrl: 'https://180.93.180.3:6443')
     }
 
     environment {
@@ -111,9 +130,9 @@ pipeline {
                 archiveArtifacts artifacts: '**/*', followSymlinks: false
             }
         }
-        stage('UnArchive Artifacrt'){
+        stage('Lists Pods'){
             steps{
-                unarchive(mapping: ['dir/' : '.'])
+                sh 'kubectl get pods'
             }
         }
     }
