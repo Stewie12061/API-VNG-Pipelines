@@ -30,6 +30,7 @@ pipeline {
                     param (
                         [string]$name
                     )
+                    $name
                     if ($name -notmatch "^[a-z][a-z0-9-]{0,61}[a-z0-9]$") {
                         Write-Host "##vso[task.logissue type=error]Invalid deploymentName. It must contain at most 63 characters, only lowercase alphanumeric characters or \'-\', start with an alphabetic character, and end with an alphanumeric character."
                         exit 1
