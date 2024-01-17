@@ -8,15 +8,15 @@ pipeline {
     }
 
     environment {
-        DNS_APIKEY = 'gHzYh74VJWFj_GeraDcnduffMvAVVGiDnZP'
-        DNS_APISECRET = 'JJA6UeV6NoQAc7SSb8hr3W'
+        DNS_APIKEY = credentials('dns-api-key-creds')
+        DNS_APISECRET = credentials('dns-api-secret-creds')
         DNS_RECORD_DATA_API = '180.93.180.102'
         DNS_RECORD_DATA_WEB = '116.118.95.121'
         DOMAIN = 'minhnhut.online'
-        SA_PASSWORD = 'As@19006123'
+        SA_PASSWORD = credentials('sa-password-creds')
         SQLSERVER = '61.28.229.125'
         WEB_SERVER_IP = '116.118.95.121'
-        WEBSERVER_PASSWORD = 'As@19006123'
+        WEBSERVER_PASSWORD = credentials('web-server-password-creds')
         WEBSERVER_USERNAME = 'web-server\\stewie12061'
     }
 
@@ -34,8 +34,6 @@ pipeline {
             steps {
                 script{
                     def powershellScript = '''
-                            $variable = "$env:DNS_APISECRET"
-                            Write-Host $variable
                             $deploymentName = "$env:deploymentName"
                             $expireMinute = "$env:expireMinute"
                             $expireHour = "$env:expireHour"
@@ -115,63 +113,70 @@ pipeline {
                 archiveArtifacts artifacts: '**/*', followSymlinks: false
             }
         }
+        stage('Unarchive to Specific Folder') {
+            steps {
+                // Unarchive the artifacts to a specific folder
+                unarchive mapping: ['*': '${env.WORKSPACE)/manifests'], allowEmptyArchive: true
+            }
+        }
         stage('Lists Pods'){
             steps{
                 powershell('kubectl get pods')
             }
         }
-        // stage('Convert UTC and Replace Variables in YAML Templates'){
-        //     step{
-        //         def convertTimeReplaceScript = '''
-        //             function ConvertToUtc {
-        //                 param(
-        //                     [int]$day,
-        //                     [int]$month,
-        //                     [int]$year,
-        //                     [int]$hour,
-        //                     [int]$minute
-        //                 )
+        stage('Convert UTC and Replace Variables in YAML Templates'){
+            step{
+                def convertTimeReplaceScript = '''
+                    function ConvertToUtc {
+                        param(
+                            [int]$day,
+                            [int]$month,
+                            [int]$year,
+                            [int]$hour,
+                            [int]$minute
+                        )
 
-        //                 $localTime = Get-Date -Year $year -Month $month -Day $day -Hour $hour -Minute $minute -Second 0
-        //                 $utcTime = $localTime.ToUniversalTime()
+                        $localTime = Get-Date -Year $year -Month $month -Day $day -Hour $hour -Minute $minute -Second 0
+                        $utcTime = $localTime.ToUniversalTime()
 
-        //                 return $utcTime
-        //             }
-        //             $SA_PASSWORD = "${env:SA_PASSWORD}"
-        //             $SQLSERVER = "${env:SQLSERVER}"
-        //             $DNS_APIKEY = "${env:DNS_APIKEY}"
-        //             $DNS_APISECRET = "${env:DNS_APISECRET}"
-        //             $DOMAIN = "${env:DOMAIN}"
-
-        //             $expireMinute = ${{ parameters.expireMinute }}
-        //             $expireHour = ${{ parameters.expireHour }}
-        //             $expireDay = ${{ parameters.expireDay }}
-        //             $expireMonth = ${{ parameters.expireMonth }}
-        //             $expireYear = ${{ parameters.expireYear }}
-        //             $utcTime = ConvertToUtc -day $expireDay -month $expireMonth -year $expireYear -hour $expireHour -minute $expireMinute
-        //             # Extract and display components separately
-        //             $utcHour = $utcTime.Hour
-        //             $utcDay = $utcTime.Day
-        //             $utcMonth = $utcTime.Month
+                        return $utcTime
+                    }
+                    $SA_PASSWORD = "$env:SA_PASSWORD"
+                    $SQLSERVER = "$env:SQLSERVER"
+                    $DNS_APIKEY = "$env:DNS_APIKEY"
+                    $DNS_APISECRET = "$env:DNS_APISECRET"
+                    $DOMAIN = "$env:DOMAIN"
                     
-        //             $templateFiles = Get-ChildItem -Path $(Pipeline.Workspace)/manifests -Filter '*.yaml' -Recurse
-        //             foreach ($file in $templateFiles) {
-        //             (Get-Content $file.FullName) | ForEach-Object {
-        //                 $_ -replace '\$\(deploymentName\)', '${{ parameters.deploymentName }}' `
-        //                 -replace '\$\(expireMinute\)', '${{ parameters.expireMinute }}' `
-        //                 -replace '\$\(expireHour\)', "$utcHour" `
-        //                 -replace '\$\(expireDay\)', "$utcDay" `
-        //                 -replace '\$\(expireMonth\)', "$utcMonth" `
-        //                 -replace '\$\(SQLSERVER\)', "$SQLSERVER" `
-        //                 -replace '\$\(SA_PASSWORD\)', "$SA_PASSWORD" `
-        //                 -replace '\$\(DNS_APIKEY\)', "$DNS_APIKEY" `
-        //                 -replace '\$\(DNS_APISECRET\)', "$DNS_APISECRET" `
-        //                 -replace '\$\(DOMAIN\)', "$DOMAIN"
-        //             } | Set-Content $file.FullName
-        //             }
-        //         '''
-        //     }
-        // }
+                    $deploymentName = "$env:deploymentName"
+                    $expireMinute = "$env:expireMinute"
+                    $expireHour = "$env:expireHour"
+                    $expireDay = "$env:expireDay"
+                    $expireMonth = "$env:expireMonth"
+                    $expireYear = "$env:expireYear"
+                    $utcTime = ConvertToUtc -day $expireDay -month $expireMonth -year $expireYear -hour $expireHour -minute $expireMinute
+                    # Extract and display components separately
+                    $utcHour = $utcTime.Hour
+                    $utcDay = $utcTime.Day
+                    $utcMonth = $utcTime.Month
+                    
+                    $templateFiles = Get-ChildItem -Path ${env.WORKSPACE)/manifests -Filter '*.yaml' -Recurse
+                    foreach ($file in $templateFiles) {
+                    (Get-Content $file.FullName) | ForEach-Object {
+                        $_ -replace '\$\(deploymentName\)', "$deploymentName" `
+                        -replace '\$\(expireMinute\)', "$expireMinute" `
+                        -replace '\$\(expireHour\)', "$utcHour" `
+                        -replace '\$\(expireDay\)', "$utcDay" `
+                        -replace '\$\(expireMonth\)', "$utcMonth" `
+                        -replace '\$\(SQLSERVER\)', "$SQLSERVER" `
+                        -replace '\$\(SA_PASSWORD\)', "$SA_PASSWORD" `
+                        -replace '\$\(DNS_APIKEY\)', "$DNS_APIKEY" `
+                        -replace '\$\(DNS_APISECRET\)', "$DNS_APISECRET" `
+                        -replace '\$\(DOMAIN\)', "$DOMAIN"
+                    } | Set-Content $file.FullName
+                    }
+                '''
+            }
+        }
     }
 
     post {
