@@ -160,7 +160,7 @@ pipeline {
                     $utcDay = $utcTime.Day
                     $utcMonth = $utcTime.Month
 
-                    $WORKSPACE = "$env:WORKSPACE/manifests"
+                    $WORKSPACE = "$env:WORKSPACE\\manifests"
                     Write-Host $WORKSPACE
 
                     $templateFiles = "Get-ChildItem -Path $WORKSPACE -Filter '*.yaml' -Recurse"
