@@ -160,7 +160,7 @@ pipeline {
                     $utcDay = $utcTime.Day
                     $utcMonth = $utcTime.Month
 
-                    $WORKSPACE = "$env:WORKSPACE"
+                    $WORKSPACE = "$env:WORKSPACE/../manifests"
                     Write-Host $WORKSPACE
 
                     
