@@ -73,19 +73,19 @@ pipeline {
                 }
 
                 # Validate deploymentName
-                Validate-DeploymentName -name ${{ parameters.deploymentName }}
+                Validate-DeploymentName -name ${params.deploymentName}
 
                 # Validate expireMinute
-                Validate-ExpireMinute -minute ${{ parameters.expireMinute }}
+                Validate-ExpireMinute -minute ${parameters.expireMinute}
 
                 # Validate expireHour
-                Validate-ExpireHour -hour ${{ parameters.expireHour }}
+                Validate-ExpireHour -hour ${params.expireHour}
 
                 # Validate expireDay
-                Validate-ExpireDay -day  ${{ parameters.expireDay }}
+                Validate-ExpireDay -day  ${params.expireDay}
 
                 # Validate expireMonth
-                Validate-ExpireMonth -month ${{ parameters.expireMonth }}
+                Validate-ExpireMonth -month ${params.expireMonth}
 
                 Write-Host "All parameters passed validation successfully."'''
             }
