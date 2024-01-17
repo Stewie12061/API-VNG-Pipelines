@@ -115,7 +115,7 @@ pipeline {
         }
         stage('Lists Pods'){
             steps{
-                sh 'kubectl get pods'
+                powershell('kubectl get pods')
             }
         }
     }
