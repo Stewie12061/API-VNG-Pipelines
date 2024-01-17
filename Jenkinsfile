@@ -166,16 +166,16 @@ pipeline {
                     $templateFiles = Get-ChildItem -Path $WORKSPACE -Filter '*.yaml' -Recurse
                     foreach ($file in $templateFiles) {
                         (Get-Content $file.FullName) | ForEach-Object {
-                            $_ -replace '$(deploymentName)', "$deploymentName" `
-                            -replace '$(expireMinute)', "$expireMinute" `
-                            -replace '$(expireHour)', "$utcHour" `
-                            -replace '$(expireDay)', "$utcDay" `
-                            -replace '$(expireMonth)', "$utcMonth" `
-                            -replace '$(SQLSERVER)', "$SQLSERVER" `
-                            -replace '$(SA_PASSWORD)', "$SA_PASSWORD" `
-                            -replace '$(DNS_APIKEY)', "$DNS_APIKEY" `
-                            -replace '$(DNS_APISECRET)', "$DNS_APISECRET" `
-                            -replace '$(DOMAIN)', "$DOMAIN"
+                            $_ -replace '\\$(deploymentName)\\', "$deploymentName" `
+                            -replace '\\$(expireMinute)\\', "$expireMinute" `
+                            -replace '\\$(expireHour)\\', "$utcHour" `
+                            -replace '\\$(expireDay)\\', "$utcDay" `
+                            -replace '\\$(expireMonth)\\', "$utcMonth" `
+                            -replace '\\$(SQLSERVER)\\', "$SQLSERVER" `
+                            -replace '\\$(SA_PASSWORD)\\', "$SA_PASSWORD" `
+                            -replace '\\$(DNS_APIKEY)\\', "$DNS_APIKEY" `
+                            -replace '\\$(DNS_APISECRET)\\', "$DNS_APISECRET" `
+                            -replace '\\$(DOMAIN)\\', "$DOMAIN"
                         } | Set-Content $file.FullName
                     }
                     '''
