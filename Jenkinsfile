@@ -303,6 +303,60 @@ pipeline {
                 }
             }
         }
+        stage('Create IIS WEB Site'){
+            agent { label 'web-agent' }
+            step{
+                powershell '''
+                    $folderName="$env:deploymentName"
+                    $SA_PASSWORD="$env:SA_PASSWORD"
+                    $SQLSERVER="$env:SQLSERVER"
+
+                    # Create publish folder
+                    robocopy.exe "C:\\Publish0" "C:\\WebDemo\\$folderName" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
+
+                    $siteName = "$folderName"
+                    $publishFolder = "C:\\WebDemo\\$folderName"
+                    $applicationPoolName = "$folderName"
+                    $bindingIPAddress = "*"
+                    $bindingPort = "80"
+                    $hostname = "${folderName}-web.minhnhut.online"
+
+                    # Check if IIS module is installed
+                    if (-not (Get-Module -ListAvailable -Name WebAdministration)) {
+                        Install-Module -Name WebAdministration -Force -AllowClobber
+                    }
+
+                    # Import the WebAdministration module
+                    Import-Module WebAdministration
+
+                    # Create Application Pool
+                    New-WebAppPool -Name $applicationPoolName
+
+                    # Create Website with Custom Binding
+                    New-Website -Name $siteName -PhysicalPath $publishFolder -ApplicationPool $applicationPoolName -Port $bindingPort -HostHeader $hostname -Force
+
+                    Write-Host "Website '$siteName' created successfully."
+
+                    $configFilePath = "C:\\WebDemo\\$folderName\\web.config"
+
+                    # Check if the file exists
+                    if (Test-Path $configFilePath) {
+                        $configContent = Get-Content -Path $configFilePath -Raw
+
+                        # Perform the necessary modifications (replace database names)
+                        $configContent = $configContent -replace "Server=SQLServer,1433;Database=DBDataName;User ID=username; Password=password;", "Server=$SQLSERVER,1433;Database=1BOSS_$folderName;User ID=sa; Password=$SA_PASSWORD;"
+                        $configContent = $configContent -replace "Server=SQLServer,1433;Database=DBAdminName;User ID=username; Password=password;", "Server=$SQLSERVER,1433;Database=AS_ADMIN_1BOSS_$folderName;User ID=sa; Password=$SA_PASSWORD;"
+
+                        # Save the modified content back to the web.config file
+                        $configContent | Set-Content -Path $configFilePath
+
+                        Write-Host "web.config file updated successfully."
+                    } else {
+                        Write-Host "The web.config file does not exist in the specified path."
+                    }
+                '''
+            }
+        }
 
     }
 
