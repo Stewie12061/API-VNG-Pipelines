@@ -306,9 +306,6 @@ pipeline {
         stage('Create IIS WEB Site'){
             steps{
                 script{
-                    def createWEBScript = '''
-                        
-                    '''
                     def remotePSSession = '''
                         $server = "$env:WEB_SERVER_IP"
                         $uri = "https://$($server):5986"
@@ -320,9 +317,9 @@ pipeline {
                         $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                         $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
                         Invoke-Command -Session $session -ScriptBlock {
-                            $folderName="$env:deploymentName"
-                            $SA_PASSWORD="$env:SA_PASSWORD"
-                            $SQLSERVER="$env:SQLSERVER"
+                            $folderName= $using:env:deploymentName
+                            $SA_PASSWORD= $using:env:SA_PASSWORD
+                            $SQLSERVER= $using:env:SQLSERVER
 
                             # Create publish folder
                             robocopy.exe "C:\\Publish0" "C:\\WebDemo\\$folderName" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
