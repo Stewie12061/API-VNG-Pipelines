@@ -400,7 +400,7 @@ pipeline {
                             $triggerStartBoundary = "$($expireYear)-$($expireMonth)-$($expireDay)T$($expireHour):$($expireMinute):00"
                             $userId = "S-1-5-21-58857817-991352899-1529334289-1002"
                             $logonType = "Password"
-                            $runLevel = "HighestAvailable"
+                            $runLevel = "Highest"
                             $command = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
                             $arguments = "-File C:\\CleanpUpSite.ps1 $deploymentName"
                             $workingDirectory = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
