@@ -405,14 +405,14 @@ pipeline {
                             $arguments = "-File C:\\CleanpUpSite.ps1 $deploymentName"
                             $workingDirectory = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
 
-                            # Create and register the task
-                            $action = New-ScheduledTaskAction -Execute $command -Argument $arguments -WorkingDirectory $workingDirectory
-                            $unregisterAction = New-ScheduledTaskAction -Execute "Unregister-ScheduledTask" -Argument "-TaskName '$taskName' -Confirm:$false"
-
-                            $trigger = New-ScheduledTaskTrigger -Once -At $triggerStartBoundary -RepetitionInterval ([TimeSpan]::FromMinutes(1)) -RepetitionDuration ([TimeSpan]::FromMinutes(10))
-                            $principal = New-ScheduledTaskPrincipal -UserId $userId -LogonType $logonType -RunLevel $runLevel
-
-                            Register-ScheduledTask -Action @($action, $unregisterAction) -Trigger $trigger -TaskName $taskName -Principal $principal -User "$Username" -Password "$Password"
+                            Register-ScheduledTask -Action (
+                                (New-ScheduledTaskAction -Execute $command -Argument $arguments -WorkingDirectory $workingDirectory),
+                                (New-ScheduledTaskAction -Execute $command -Argument "-ExecutionPolicy ByPass -Command `"Unregister-ScheduledTask -TaskName $taskName -Confirm:`$false`"")
+                            ) -Trigger (
+                                New-ScheduledTaskTrigger -Once -At $triggerStartBoundary -RepetitionInterval ([TimeSpan]::FromMinutes(1)) -RepetitionDuration ([TimeSpan]::FromMinutes(10))
+                            ) -Principal (
+                                New-ScheduledTaskPrincipal -UserId $userId -LogonType $logonType -RunLevel $runLevel
+                            ) -TaskName $taskName -User "$Username" -Password "$Password"
                         }
                         Remove-PSSession $session
                     '''
