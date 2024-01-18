@@ -303,10 +303,16 @@ pipeline {
                 }
             }
         }
+        def remoteWebServer = [
+            host: "${WEB_SERVER_IP}",
+            user: "${WEBSERVER_USERNAME}",
+            password: "${WEBSERVER_PASSWORD}",
+            allowAnyHosts: true
+        ]
         stage('Create IIS WEB Site'){
-            agent { label 'web-agent' }
             step{
-                powershell '''
+                script{
+                    def createWEBScript = '''
                     $folderName="$env:deploymentName"
                     $SA_PASSWORD="$env:SA_PASSWORD"
                     $SQLSERVER="$env:SQLSERVER"
@@ -355,6 +361,8 @@ pipeline {
                         Write-Host "The web.config file does not exist in the specified path."
                     }
                 '''
+                sshCommand remote: remoteWebServer, command: createWEBScript
+                }
             }
         }
 
