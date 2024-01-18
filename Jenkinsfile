@@ -398,7 +398,7 @@ pipeline {
 
                             $utcPlus7 = Get-Date -Year $expireYear -Month $expireMonth -Day $expireDay -Hour $expireHour -Minute $expireMinute -Second 0
                             $utcMinus8 = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
-                            $convertTime = [System.TimeZoneInfo]::ConvertTime($localTime, $utcMinus8) 
+                            $convertTime = [System.TimeZoneInfo]::ConvertTime($utcPlus7, $utcMinus8) 
                             $convertHour = $convertTime.Hour
                             $convertDay = $convertTime.Day
                             $convertMonth = $convertTime.Month
