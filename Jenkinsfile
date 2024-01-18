@@ -387,14 +387,14 @@ pipeline {
                         $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
                         Invoke-Command -Session $session -ScriptBlock {
                             # Define task parameters
-                            $expireYear = $using:env:expireYear
-                            $expireMonth = $using:env:expireMonth
-                            $expireDay = $using:env:expireDay
-                            $expireHour = $using:env:expireHour
-                            $expireMinute = $using:env:expireMinute
-                            $deploymentName = $using:env:deploymentName
-                            $Username = $using:env:WEBSERVER_USERNAME
-                            $Password = $using:env:WEBSERVER_PASSWORD
+                            $expireYear = "$using:env:expireYear"
+                            $expireMonth = "$using:env:expireMonth"
+                            $expireDay = "$using:env:expireDay"
+                            $expireHour = "$using:env:expireHour"
+                            $expireMinute = "$using:env:expireMinute"
+                            $deploymentName = "$using:env:deploymentName"
+                            $Username = "$using:env:WEBSERVER_USERNAME"
+                            $Password = "$using:env:WEBSERVER_PASSWORD"
 
                             $taskName = "Delete $deploymentName Site"
                             $triggerStartBoundary = "$($expireYear)-$($expireMonth)-$($expireDay)T$($expireHour):$($expireMinute):00"
@@ -405,14 +405,16 @@ pipeline {
                             $arguments = "-File C:\\CleanpUpSite.ps1 $deploymentName"
                             $workingDirectory = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
 
-                            Register-ScheduledTask -Action (
-                                (New-ScheduledTaskAction -Execute $command -Argument $arguments -WorkingDirectory $workingDirectory),
-                                (New-ScheduledTaskAction -Execute $command -Argument "-ExecutionPolicy ByPass -Command `"Unregister-ScheduledTask -TaskName $taskName -Confirm:`$false`"")
-                            ) -Trigger (
-                                New-ScheduledTaskTrigger -Once -At $triggerStartBoundary -RepetitionInterval ([TimeSpan]::FromMinutes(1)) -RepetitionDuration ([TimeSpan]::FromMinutes(10))
-                            ) -Principal (
-                                New-ScheduledTaskPrincipal -UserId $userId -LogonType $logonType -RunLevel $runLevel
-                            ) -TaskName $taskName -User "$Username" -Password "$Password"
+                            Register-ScheduledTask -TaskName "$taskName" -User "$Username" -Password "$Password" -InputObject (
+                                New-ScheduledTask -Action (
+                                    (New-ScheduledTaskAction -Execute $command -Argument $arguments -WorkingDirectory $workingDirectory),
+                                    (New-ScheduledTaskAction -Execute $command -Argument "-ExecutionPolicy ByPass -Command `"Unregister-ScheduledTask -TaskName "$taskName" -Confirm:`$false`"")
+                                ) -Trigger (
+                                    New-ScheduledTaskTrigger -Once -At $triggerStartBoundary -RepetitionInterval ([TimeSpan]::FromMinutes(1)) -RepetitionDuration ([TimeSpan]::FromMinutes(10))
+                                ) -Principal (
+                                    New-ScheduledTaskPrincipal -UserId $userId -LogonType $logonType -RunLevel $runLevel
+                                )
+                            )
                         }
                         Remove-PSSession $session
                     '''
