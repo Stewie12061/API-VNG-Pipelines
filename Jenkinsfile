@@ -397,8 +397,9 @@ pipeline {
                             $Password = "$using:env:WEBSERVER_PASSWORD"
 
                             $utcPlus7 = Get-Date -Year $expireYear -Month $expireMonth -Day $expireDay -Hour $expireHour -Minute $expireMinute -Second 0
+                            $utc = $utcPlus7.ToUniversalTime()
                             $utcMinus8 = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
-                            $convertTime = [System.TimeZoneInfo]::ConvertTime($utcMinus8, $utcPlus7) 
+                            $convertTime = [System.TimeZoneInfo]::ConvertTime($utc, $utcMinus8) 
                             $convertHour = $convertTime.Hour
                             $convertDay = $convertTime.Day
                             $convertMonth = $convertTime.Month
