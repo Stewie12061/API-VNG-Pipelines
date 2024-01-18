@@ -376,6 +376,9 @@ pipeline {
                 script{
                     
                     def remotePSSession = '''
+                        $utcPlus7 = Get-Date -Year $env:expireYear -Month $env:expireMonth -Day $env:expireDay -Hour $env:expireHour -Minute $env:expireMinute -Second 0
+                        $utc = $utcPlus7.ToUniversalTime()
+
                         $server = "$env:WEB_SERVER_IP"
                         $uri = "https://$($server):5986"
                         $user = "$env:WEBSERVER_USERNAME"
@@ -385,19 +388,12 @@ pipeline {
 
                         $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                         $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
-                        Invoke-Command -Session $session -ScriptBlock {
+                        Invoke-Command -Session $session -ArgumentList $utc -ScriptBlock {
                             # Define task parameters
-                            $expireYear = "$using:env:expireYear"
-                            $expireMonth = "$using:env:expireMonth"
-                            $expireDay = "$using:env:expireDay"
-                            $expireHour = "$using:env:expireHour"
-                            $expireMinute = "$using:env:expireMinute"
-                            $deploymentName = "$using:env:deploymentName"
+                            param($utc)
                             $Username = "$using:env:WEBSERVER_USERNAME"
                             $Password = "$using:env:WEBSERVER_PASSWORD"
 
-                            $utcPlus7 = Get-Date -Year $expireYear -Month $expireMonth -Day $expireDay -Hour $expireHour -Minute $expireMinute -Second 0
-                            $utc = $utcPlus7.ToUniversalTime()
                             $utcMinus8 = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
                             $convertTime = [System.TimeZoneInfo]::ConvertTime($utc, $utcMinus8) 
                             $convertHour = $convertTime.Hour
