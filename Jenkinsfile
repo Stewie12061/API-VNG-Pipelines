@@ -403,7 +403,7 @@ pipeline {
                             $converYear = $convertTime.Year
 
                             $taskName = "Delete $deploymentName Site"
-                            $triggerStartBoundary = [DateTime]::Parse("$($converYear)-$($convertMonth)-$($convertDay)T$($convertHour):$($expireMinute):00")
+                            $triggerStartBoundary = Get-Date -Year $converYear -Month $convertMonth -Day $convertDay -Hour $convertHour -Minute $using:env:expireMinute -Second 0 -Format 'yyyy-MM-ddTHH:mm:ss'
                             $userId = "S-1-5-21-58857817-991352899-1529334289-1002"
                             $logonType = "Password"
                             $runLevel = "Highest"
