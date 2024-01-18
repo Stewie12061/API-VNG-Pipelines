@@ -307,9 +307,11 @@ pipeline {
             steps{
                 script{
                     def createWEBScript = '''
-                        $folderName="$env:deploymentName"
-                        $SA_PASSWORD="$env:SA_PASSWORD"
-                        $SQLSERVER="$env:SQLSERVER"
+                        param (
+                            [string]$folderName,
+                            [string]$SA_PASSWORD,
+                            [string]$SQLSERVER
+                        )
 
                         # Create publish folder
                         robocopy.exe "C:\\Publish0" "C:\\WebDemo\\$folderName" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
@@ -355,24 +357,9 @@ pipeline {
                             Write-Host "The web.config file does not exist in the specified path."
                         }
                     '''
-                    def session = powershell(
-                        script: "New-PSSession -ComputerName ${env:WEB_SERVER_IP} -Credential (New-Object PSCredential -ArgumentList ${env:WEBSERVER_USERNAME}, (ConvertTo-SecureString -AsPlainText -String ${env:WEBSERVER_PASSWORD} -Force))"
+                    powershell(
+                        script: "Invoke-Command -ComputerName ${env:WEB_SERVER_IP} -Credential (New-Object PSCredential -ArgumentList '${env:WEBSERVER_USERNAME}', (ConvertTo-SecureString -AsPlainText -String '${env:WEBSERVER_PASSWORD}' -Force)) -ScriptBlock { param($using:deploymentName, $using:SA_PASSWORD, $using:SQLSERVER); ${using:createWEBScript} } -ArgumentList ${env:deploymentName}, ${env:SA_PASSWORD}, ${env:SQLSERVER}"
                     )
-
-                    try {
-                        // Execute the PowerShell script on the remote machine
-                        powershell(
-                            script: createWEBScript,
-                            remote: true,
-                            session: session
-                        )
-                    } finally {
-                        // Close the PowerShell Remoting session
-                        powershell(
-                            script: "Remove-PSSession -Session ${session}",
-                            remote: true
-                        )
-                    }
                 }
             }
         }
