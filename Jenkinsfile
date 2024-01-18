@@ -357,12 +357,12 @@ pipeline {
                 '''
 
                     def remoteWebServer = [:]
-                    remoteWebServer.host = "${WEB_SERVER_IP}"
-                    remoteWebServer.user = "${WEBSERVER_USERNAME}"
-                    remoteWebServer.password = "${WEBSERVER_PASSWORD}"
+                    remoteWebServer.host = "$WEB_SERVER_IP"
+                    remoteWebServer.user = "$WEBSERVER_USERNAME"
+                    remoteWebServer.password = "$WEBSERVER_PASSWORD"
                     remoteWebServer.allowAnyHosts = true
 
-                    sshCommand remote: remoteWebServer, command: createWEBScript
+                    sshCommand remote: remoteWebServer, command: 'ls'
                 }
             }
         }
