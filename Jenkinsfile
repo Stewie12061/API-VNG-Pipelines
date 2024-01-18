@@ -385,7 +385,8 @@ pipeline {
                         $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                         $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
                         Invoke-Command -Session $session -ScriptBlock {
-                            $taskXml = @"<Task
+                            $taskXml = @'
+                                <Task
                                     xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task" version="1.3">
                                     <RegistrationInfo>
                                         <Author>$using:env:WEBSERVER_USERNAME</Author>
@@ -434,7 +435,8 @@ pipeline {
                                             <WorkingDirectory>C:\\Windows\\System32\\WindowsPowerShell\\v1.0</WorkingDirectory>
                                         </Exec>
                                     </Actions>
-                                </Task>"@
+                                </Task>
+                            '@
                             $taskXml | Out-File "C:\\TaskDefinition.xml" -Force
                             Register-ScheduledTask -xml (Get-Content 'C:\\TaskDefinition.xml' | Out-String) -TaskPath "\\" -TaskName "Delete $using:env:deploymentName IIS Site" -User "$using:env:WEBSERVER_USERNAME" -Password "$using:env:WEBSERVER_PASSWORD" -Force
                         }
