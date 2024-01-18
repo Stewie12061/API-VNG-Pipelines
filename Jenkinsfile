@@ -393,6 +393,7 @@ pipeline {
                             param($utc)
                             $Username = "$using:env:WEBSERVER_USERNAME"
                             $Password = "$using:env:WEBSERVER_PASSWORD"
+                            $expireMinute = "$using:env:expireMinute"
 
                             $utcMinus8 = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
                             $convertTime = [System.TimeZoneInfo]::ConvertTime($utc, $utcMinus8) 
