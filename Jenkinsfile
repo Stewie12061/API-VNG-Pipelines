@@ -357,6 +357,7 @@ pipeline {
                 '''
 
                     def remoteWebServer = [:]
+                    remote.name = 'WebServer'
                     remoteWebServer.host = "$WEB_SERVER_IP"
                     remoteWebServer.user = "$WEBSERVER_USERNAME"
                     remoteWebServer.password = "$WEBSERVER_PASSWORD"
