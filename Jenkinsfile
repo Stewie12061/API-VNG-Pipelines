@@ -357,7 +357,7 @@ pipeline {
                     '''
                     def remotePSSession = '''
                         $server = "$env:WEB_SERVER_IP"
-                        $uri = "https://$server:5986"
+                        $uri = "https://$($server):5986"
                         $user = "$env:WEBSERVER_USERNAME"
                         $password = "$env:WEBSERVER_PASSWORD"
                         $securepassword = ConvertTo-SecureString -String $password -AsPlainText -Force
