@@ -177,132 +177,132 @@ pipeline {
                 }
             }
         }
-        stage('Deploy restore database job'){
-            steps{
-                powershell('kubectl apply -f ./manifests/job-restore-db.yaml')
-            }
-        }
-        stage('Check database status'){
-            steps{
-                script{
-                    def checkDBScript = '''
-                        # Additional step to wait for the database to be ONLINE
-                        $DatabaseName = "1BOSS_$env:deploymentName"
-                        $ServerName = "$env:SQLSERVER"
-                        $DBPassword = "$env:SA_PASSWORD"
+        // stage('Deploy restore database job'){
+        //     steps{
+        //         powershell('kubectl apply -f ./manifests/job-restore-db.yaml')
+        //     }
+        // }
+        // stage('Check database status'){
+        //     steps{
+        //         script{
+        //             def checkDBScript = '''
+        //                 # Additional step to wait for the database to be ONLINE
+        //                 $DatabaseName = "1BOSS_$env:deploymentName"
+        //                 $ServerName = "$env:SQLSERVER"
+        //                 $DBPassword = "$env:SA_PASSWORD"
 
-                        Write-Host "Server Name: $ServerName"
-                        Write-Host "Database Name: $DatabaseName"
+        //                 Write-Host "Server Name: $ServerName"
+        //                 Write-Host "Database Name: $DatabaseName"
 
-                        # Loop for a maximum of $maxAttempts times
-                        $maxAttempts = 10
-                        $attempts = 0
-                        while ($attempts -lt $maxAttempts) {
-                            $attempts++
+        //                 # Loop for a maximum of $maxAttempts times
+        //                 $maxAttempts = 10
+        //                 $attempts = 0
+        //                 while ($attempts -lt $maxAttempts) {
+        //                     $attempts++
 
-                            $connectionString = "Server=$ServerName;Database=master;User Id=sa;Password=$DBPassword;TrustServerCertificate=True;"
-                            $databaseStatus = Invoke-Sqlcmd -ConnectionString $connectionString -Query "SELECT state_desc FROM sys.databases WHERE name = '$DatabaseName'"
-                            $databaseState = $databaseStatus.state_desc
+        //                     $connectionString = "Server=$ServerName;Database=master;User Id=sa;Password=$DBPassword;TrustServerCertificate=True;"
+        //                     $databaseStatus = Invoke-Sqlcmd -ConnectionString $connectionString -Query "SELECT state_desc FROM sys.databases WHERE name = '$DatabaseName'"
+        //                     $databaseState = $databaseStatus.state_desc
 
-                            Write-Host "Database state: $databaseState"
+        //                     Write-Host "Database state: $databaseState"
 
-                            if ($databaseState -eq "ONLINE") {
-                                Write-Host "Database is now ONLINE. Proceeding with deployment."
-                                break
-                            }
-                            Write-Host "Waiting for the database to be ONLINE. Attempt $attempts of $maxAttempts."
-                            Start-Sleep -Seconds 10
-                        }
-                        # Check if the loop exited due to reaching the maximum number of attempts
-                        if ($attempts -eq $maxAttempts) {
-                            Write-Host "Database did not come ONLINE after $maxAttempts attempts. Canceling deployment."
-                            exit 1  # Exit the script with a non-zero status code to mark it as failed
-                        }
-                    '''
-                    powershell(script: checkDBScript)
-                }
-            }
-        }
-        stage('Add DNS Record For API'){
-            steps{
-                script{
-                    def createDNSRecord = '''
-                        $apiKey = "$env:DNS_APIKEY"
-                        $apiSecret = "$env:DNS_APISECRET"
+        //                     if ($databaseState -eq "ONLINE") {
+        //                         Write-Host "Database is now ONLINE. Proceeding with deployment."
+        //                         break
+        //                     }
+        //                     Write-Host "Waiting for the database to be ONLINE. Attempt $attempts of $maxAttempts."
+        //                     Start-Sleep -Seconds 10
+        //                 }
+        //                 # Check if the loop exited due to reaching the maximum number of attempts
+        //                 if ($attempts -eq $maxAttempts) {
+        //                     Write-Host "Database did not come ONLINE after $maxAttempts attempts. Canceling deployment."
+        //                     exit 1  # Exit the script with a non-zero status code to mark it as failed
+        //                 }
+        //             '''
+        //             powershell(script: checkDBScript)
+        //         }
+        //     }
+        // }
+        // stage('Add DNS Record For API'){
+        //     steps{
+        //         script{
+        //             def createDNSRecord = '''
+        //                 $apiKey = "$env:DNS_APIKEY"
+        //                 $apiSecret = "$env:DNS_APISECRET"
 
-                        # Set the domain and record information
-                        $domain = "$env:DOMAIN"
-                        $recordType = "A"
-                        $recordName = "$env:deploymentName-api"
-                        $recordData = "$env:DNS_RECORD_DATA_API"
-                        $ttl = 600
+        //                 # Set the domain and record information
+        //                 $domain = "$env:DOMAIN"
+        //                 $recordType = "A"
+        //                 $recordName = "$env:deploymentName-api"
+        //                 $recordData = "$env:DNS_RECORD_DATA_API"
+        //                 $ttl = 600
 
-                        # Construct the API endpoint URL
-                        $apiEndpoint = "https://api.godaddy.com/v1/domains/$domain/records"
+        //                 # Construct the API endpoint URL
+        //                 $apiEndpoint = "https://api.godaddy.com/v1/domains/$domain/records"
 
-                        # Construct the headers
-                        $headers = @{
-                            'Authorization' = "sso-key $($apiKey):$($apiSecret)"
-                            'Content-Type'  = 'application/json'
-                        }
+        //                 # Construct the headers
+        //                 $headers = @{
+        //                     'Authorization' = "sso-key $($apiKey):$($apiSecret)"
+        //                     'Content-Type'  = 'application/json'
+        //                 }
 
-                        # Construct the payload for the new DNS record
-                        $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
+        //                 # Construct the payload for the new DNS record
+        //                 $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
 
-                        # Make the API request to create the DNS record
-                        $response = Invoke-WebRequest -Uri $apiEndpoint -Method Patch -Headers $headers -Body $payload
+        //                 # Make the API request to create the DNS record
+        //                 $response = Invoke-WebRequest -Uri $apiEndpoint -Method Patch -Headers $headers -Body $payload
 
-                        # Display the response
-                        $response
-                    '''
-                    powershell(script: createDNSRecord)
-                }
-            }
-        }
-        stage('Deploy API'){
-            steps{
-                powershell '''kubectl apply -f ./manifests/api-deploy.yaml
-                    kubectl apply -f ./manifests/api-job-ingress-add-host.yaml
-                    kubectl apply -f ./manifests/api-cron-job-run-delete-deploy.yaml'''
-            }
-        }
-        stage('Add DNS Record For Web'){
-            steps{
-                script{
-                    def createDNSRecord = '''
-                        # Set your GoDaddy API key and secret
-                        $apiKey = "$env:DNS_APIKEY"
-                        $apiSecret = "$env:DNS_APISECRET"
+        //                 # Display the response
+        //                 $response
+        //             '''
+        //             powershell(script: createDNSRecord)
+        //         }
+        //     }
+        // }
+        // stage('Deploy API'){
+        //     steps{
+        //         powershell '''kubectl apply -f ./manifests/api-deploy.yaml
+        //             kubectl apply -f ./manifests/api-job-ingress-add-host.yaml
+        //             kubectl apply -f ./manifests/api-cron-job-run-delete-deploy.yaml'''
+        //     }
+        // }
+        // stage('Add DNS Record For Web'){
+        //     steps{
+        //         script{
+        //             def createDNSRecord = '''
+        //                 # Set your GoDaddy API key and secret
+        //                 $apiKey = "$env:DNS_APIKEY"
+        //                 $apiSecret = "$env:DNS_APISECRET"
 
-                        # Set the domain and record information
-                        $domain = "$env:DOMAIN"
-                        $recordType = "A"
-                        $recordName = "$env:deploymentName-web"
-                        $recordData = "$env:DNS_RECORD_DATA_WEB"
-                        $ttl = 600
+        //                 # Set the domain and record information
+        //                 $domain = "$env:DOMAIN"
+        //                 $recordType = "A"
+        //                 $recordName = "$env:deploymentName-web"
+        //                 $recordData = "$env:DNS_RECORD_DATA_WEB"
+        //                 $ttl = 600
 
-                        # Construct the API endpoint URL
-                        $apiEndpoint = "https://api.godaddy.com/v1/domains/$domain/records"
+        //                 # Construct the API endpoint URL
+        //                 $apiEndpoint = "https://api.godaddy.com/v1/domains/$domain/records"
 
-                        # Construct the headers
-                        $headers = @{
-                            'Authorization' = "sso-key $($apiKey):$($apiSecret)"
-                            'Content-Type'  = 'application/json'
-                        }
+        //                 # Construct the headers
+        //                 $headers = @{
+        //                     'Authorization' = "sso-key $($apiKey):$($apiSecret)"
+        //                     'Content-Type'  = 'application/json'
+        //                 }
 
-                        # Construct the payload for the new DNS record
-                        $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
+        //                 # Construct the payload for the new DNS record
+        //                 $payload = ConvertTo-Json @(@{type=$recordType;name=$recordName;data=$recordData;ttl=$ttl})
 
-                        # Make the API request to create the DNS record
-                        $response = Invoke-WebRequest -Uri $apiEndpoint -Method Patch -Headers $headers -Body $payload
+        //                 # Make the API request to create the DNS record
+        //                 $response = Invoke-WebRequest -Uri $apiEndpoint -Method Patch -Headers $headers -Body $payload
 
-                        # Display the response
-                        $response
-                    '''
-                    powershell(script: createDNSRecord)
-                }
-            }
-        }
+        //                 # Display the response
+        //                 $response
+        //             '''
+        //             powershell(script: createDNSRecord)
+        //         }
+        //     }
+        // }
         stage('Create IIS WEB Site'){
             steps{
                 script{
@@ -356,13 +356,13 @@ pipeline {
                     }
                 '''
 
-                def remoteWebServer = [:]
-                remoteWebServer.host = "${WEB_SERVER_IP}"
-                remoteWebServer.user = "${WEBSERVER_USERNAME}"
-                remoteWebServer.password = "${WEBSERVER_PASSWORD}"
-                remoteWebServer.allowAnyHosts = true
+                    def remoteWebServer = [:]
+                    remoteWebServer.host = "${WEB_SERVER_IP}"
+                    remoteWebServer.user = "${WEBSERVER_USERNAME}"
+                    remoteWebServer.password = "${WEBSERVER_PASSWORD}"
+                    remoteWebServer.allowAnyHosts = true
 
-                sshCommand remote: remoteWebServer, command: createWEBScript
+                    sshCommand remote: remoteWebServer, command: createWEBScript
                 }
             }
         }
