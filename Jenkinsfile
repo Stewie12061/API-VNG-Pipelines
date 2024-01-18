@@ -303,14 +303,8 @@ pipeline {
                 }
             }
         }
-        def remoteWebServer = [
-            host: "${WEB_SERVER_IP}",
-            user: "${WEBSERVER_USERNAME}",
-            password: "${WEBSERVER_PASSWORD}",
-            allowAnyHosts: true
-        ]
         stage('Create IIS WEB Site'){
-            step{
+            steps{
                 script{
                     def createWEBScript = '''
                     $folderName="$env:deploymentName"
@@ -361,6 +355,13 @@ pipeline {
                         Write-Host "The web.config file does not exist in the specified path."
                     }
                 '''
+
+                def remoteWebServer = [:]
+                remoteWebServer.host = "${WEB_SERVER_IP}"
+                remoteWebServer.user = "${WEBSERVER_USERNAME}"
+                remoteWebServer.password = "${WEBSERVER_PASSWORD}"
+                remoteWebServer.allowAnyHosts = true
+
                 sshCommand remote: remoteWebServer, command: createWEBScript
                 }
             }
