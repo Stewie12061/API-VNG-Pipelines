@@ -391,8 +391,8 @@ pipeline {
                         Invoke-Command -Session $session -ArgumentList $utc -ScriptBlock {
                             # Define task parameters
                             param($utc)
-                            $Username = "$using:env:WEBSERVER_USERNAME"
-                            $Password = "$using:env:WEBSERVER_PASSWORD"
+                            $username = "$using:env:WEBSERVER_USERNAME"
+                            $password = "$using:env:WEBSERVER_PASSWORD"
                             $expireMinute = "$using:env:expireMinute"
 
                             $utcMinus8 = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
@@ -409,11 +409,10 @@ pipeline {
                             $runLevel = "Highest"
                             $command = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
                             $arguments = "-File C:\\CleanpUpSite.ps1 $deploymentName"
-                            $workingDirectory = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
 
-                            Register-ScheduledTask -TaskName "$taskName" -User "$Username" -Password "$Password" -InputObject (
+                            Register-ScheduledTask -TaskName "$taskName" -User "$username" -Password "$password" -Force -InputObject (
                                 New-ScheduledTask -Action (
-                                    (New-ScheduledTaskAction -Execute $command -Argument $arguments -WorkingDirectory $workingDirectory),
+                                    (New-ScheduledTaskAction -Execute $command -Argument $arguments),
                                     (New-ScheduledTaskAction -Execute $command -Argument "-ExecutionPolicy ByPass -Command `"Unregister-ScheduledTask -TaskName '$taskName' -Confirm:`$false`"")
                                 ) -Trigger (
                                     New-ScheduledTaskTrigger -Once -At $triggerStartBoundary
