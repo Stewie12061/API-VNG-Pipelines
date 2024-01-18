@@ -408,7 +408,7 @@ pipeline {
                             Register-ScheduledTask -TaskName "$taskName" -User "$Username" -Password "$Password" -InputObject (
                                 New-ScheduledTask -Action (
                                     (New-ScheduledTaskAction -Execute $command -Argument $arguments -WorkingDirectory $workingDirectory),
-                                    (New-ScheduledTaskAction -Execute $command -Argument "-ExecutionPolicy ByPass -Command `"Unregister-ScheduledTask -TaskName "$taskName" -Confirm:`$false`"")
+                                    (New-ScheduledTaskAction -Execute $command -Argument "-ExecutionPolicy ByPass -Command `"Unregister-ScheduledTask -TaskName '$taskName' -Confirm:`$false`"")
                                 ) -Trigger (
                                     New-ScheduledTaskTrigger -Once -At $triggerStartBoundary -RepetitionInterval ([TimeSpan]::FromMinutes(1)) -RepetitionDuration ([TimeSpan]::FromMinutes(10))
                                 ) -Principal (
