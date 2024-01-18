@@ -277,7 +277,7 @@ pipeline {
                         # Set the domain and record information
                         $domain = "$env:DOMAIN"
                         $recordType = "A"
-                        $recordName = "$deploymentName-web"
+                        $recordName = "$env:deploymentName-web"
                         $recordData = "$env:DNS_RECORD_DATA_WEB"
                         $ttl = 600
 

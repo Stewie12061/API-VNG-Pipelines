@@ -22,7 +22,7 @@ spec:
               export PATH=$PATH:/shared/usr/bin
 
               # Run kubectl commands with debugging statements
-              INDEX=$(kubectl get ingress ingress-route -o=json | jq -r '.spec.rules[].host' | grep -n "$(deploymentName)api.minhnhut.online" | cut -d: -f1)
+              INDEX=$(kubectl get ingress ingress-route -o=json | jq -r '.spec.rules[].host' | grep -n "$(deploymentName)-api.minhnhut.online" | cut -d: -f1)
               echo "INDEX: $INDEX"
               kubectl patch ingress ingress-route -n default --type json -p "[{'op': 'remove', 'path': '/spec/rules/$((INDEX-1))'}]" 
               
@@ -41,7 +41,7 @@ spec:
             - -c
             - |
               dbPassword=$(cat /mnt/secrets/SA_PASSWORD)
-              serverName=$(cat /mnt/secrets/SQLSERVER)
+              serverName=$(SQLSERVER)
               /opt/mssql-tools/bin/sqlcmd -S $serverName -U sa -P $dbPassword -Q "
                 USE master;
                 ALTER DATABASE [AS_ADMIN_1BOSS_$(deploymentName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
@@ -56,7 +56,7 @@ spec:
             - -c
             - |
               dbPassword=$(cat /mnt/secrets/SA_PASSWORD)
-              serverName=$(cat /mnt/secrets/SQLSERVER)
+              serverName=$(SQLSERVER)
               /opt/mssql-tools/bin/sqlcmd -S $serverName -U sa -P $dbPassword -Q "
                 USE master;
                 ALTER DATABASE [1BOSS_$(deploymentName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
