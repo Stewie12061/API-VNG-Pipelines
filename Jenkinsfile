@@ -396,8 +396,16 @@ pipeline {
                             $Username = "$using:env:WEBSERVER_USERNAME"
                             $Password = "$using:env:WEBSERVER_PASSWORD"
 
+                            $utcPlus7 = Get-Date "$($expireYear)-$($expireMonth)-$($expireDay)T$($expireHour):$($expireMinute):00"
+                            $utcMinus8 = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
+                            $convertTime = [System.TimeZoneInfo]::ConvertTime($localTime, $utcMinus8) 
+                            $convertHour = $convertTime.Hour
+                            $convertDay = $convertTime.Day
+                            $convertMonth = $convertTime.Month
+                            $converYear = $convertTime.Year
+
                             $taskName = "Delete $deploymentName Site"
-                            $triggerStartBoundary = "$($expireYear)-$($expireMonth)-$($expireDay)T$($expireHour):$($expireMinute):00"
+                            $triggerStartBoundary = "$($converYear)-$($convertMonth)-$($convertDay)T$($convertHour):$($expireMinute):00"
                             $userId = "S-1-5-21-58857817-991352899-1529334289-1002"
                             $logonType = "Password"
                             $runLevel = "Highest"
@@ -410,7 +418,7 @@ pipeline {
                                     (New-ScheduledTaskAction -Execute $command -Argument $arguments -WorkingDirectory $workingDirectory),
                                     (New-ScheduledTaskAction -Execute $command -Argument "-ExecutionPolicy ByPass -Command `"Unregister-ScheduledTask -TaskName '$taskName' -Confirm:`$false`"")
                                 ) -Trigger (
-                                    New-ScheduledTaskTrigger -Once -At $triggerStartBoundary -RepetitionInterval ([TimeSpan]::FromMinutes(1)) -RepetitionDuration ([TimeSpan]::FromMinutes(10))
+                                    New-ScheduledTaskTrigger -Once -At $triggerStartBoundary
                                 ) -Principal (
                                     New-ScheduledTaskPrincipal -UserId $userId -LogonType $logonType -RunLevel $runLevel
                                 )
