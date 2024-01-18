@@ -307,11 +307,9 @@ pipeline {
             steps{
                 script{
                     def createWEBScript = '''
-                        param (
-                            [string]$folderName,
-                            [string]$SA_PASSWORD,
-                            [string]$SQLSERVER
-                        )
+                        $folderName="$env:deploymentName"
+                        $SA_PASSWORD="$env:SA_PASSWORD"
+                        $SQLSERVER="$env:SQLSERVER"
 
                         # Create publish folder
                         robocopy.exe "C:\\Publish0" "C:\\WebDemo\\$folderName" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
@@ -357,9 +355,23 @@ pipeline {
                             Write-Host "The web.config file does not exist in the specified path."
                         }
                     '''
-                    powershell(
-                        script: "Invoke-Command -ComputerName ${env:WEB_SERVER_IP} -Credential (New-Object PSCredential -ArgumentList '${env:WEBSERVER_USERNAME}', (ConvertTo-SecureString -AsPlainText -String '${env:WEBSERVER_PASSWORD}' -Force)) -ScriptBlock { param($using:deploymentName, $using:SA_PASSWORD, $using:SQLSERVER); ${using:createWEBScript} } -ArgumentList ${env:deploymentName}, ${env:SA_PASSWORD}, ${env:SQLSERVER}"
-                    )
+                    def remotePSSession = '''
+                        $server = "$env:WEB_SERVER_IP"
+                        $uri = "https://$server:5986"
+                        $user = "$env:WEBSERVER_USERNAME"
+                        $password = "$env:WEBSERVER_PASSWORD"
+                        $securepassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+                        $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $user, $securepassword
+
+                        $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
+                        $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
+                        Invoke-Command -Session $session -ScriptBlock {
+                            param($scriptContent)
+                            Invoke-Expression $scriptContent
+                        } -ArgumentList $using:createWEBScript
+                        Remove-PSSession $session
+                    '''
+                    powershell(script: remotePSSession)
                 }
             }
         }
