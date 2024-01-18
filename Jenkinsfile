@@ -356,7 +356,7 @@ pipeline {
                         }
                     '''
                     def session = powershell(
-                        script: "New-PSSession -ComputerName $env:WEB_SERVER_IP -Credential (New-Object PSCredential -ArgumentList $env:WEBSERVER_USERNAME, (ConvertTo-SecureString -AsPlainText -String $env:WEBSERVER_PASSWORD -Force))"
+                        script: "New-PSSession -ComputerName ${env:WEB_SERVER_IP} -Credential (New-Object PSCredential -ArgumentList ${env:WEBSERVER_USERNAME}, (ConvertTo-SecureString -AsPlainText -String ${env:WEBSERVER_PASSWORD} -Force))"
                     )
 
                     try {
