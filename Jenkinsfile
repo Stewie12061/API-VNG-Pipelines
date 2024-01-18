@@ -365,10 +365,15 @@ pipeline {
 
                         $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                         $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
-                        Invoke-Command -Session $session -ScriptBlock {
-                            param($scriptContent)
-                            Invoke-Expression $scriptContent
-                        } -ArgumentList $using:createWEBScript
+                        $scriptBlock = {
+                            param($folderName, $SA_PASSWORD, $SQLSERVER, $createWEBScript)
+
+                            $Using:folderName = $folderName
+                            $Using:SA_PASSWORD = $SA_PASSWORD
+                            $Using:SQLSERVER = $SQLSERVER
+                            Invoke-Expression $createWEBScript
+                        }
+                        Invoke-Command -Session $session -ScriptBlock $scriptBlock -ArgumentList "$env:deploymentName", "$env:SA_PASSWORD", "$env:SQLSERVER", "$using:createWEBScript"
                         Remove-PSSession $session
                     '''
                     powershell(script: remotePSSession)
