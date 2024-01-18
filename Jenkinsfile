@@ -374,6 +374,7 @@ pipeline {
         stage('Create Task Scheduler'){
             steps{
                 script{
+                    
                     def remotePSSession = '''
                         $server = "$env:WEB_SERVER_IP"
                         $uri = "https://$($server):5986"
@@ -385,60 +386,33 @@ pipeline {
                         $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                         $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
                         Invoke-Command -Session $session -ScriptBlock {
-                            $taskXml = @'
-                                <Task
-                                    xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task" version="1.3">
-                                    <RegistrationInfo>
-                                        <Author>$using:env:WEBSERVER_USERNAME</Author>
-                                        <URI>\\Delete test Site</URI>
-                                    </RegistrationInfo>
-                                    <Triggers>
-                                        <TimeTrigger>
-                                            <StartBoundary>$using:env:expireYear-$using:env:expireMonth-$using:env:expireDayT$using:env:expireHour:$using:env:expireMinute:00+07:00</StartBoundary>
-                                            <EndBoundary>$using:env:expireYear-$using:env:expireMonth-$using:env:expireDayT$using:env:expireHour:$using:env:expireMinute:10+07:00</EndBoundary>
-                                            <Enabled>true</Enabled>
-                                        </TimeTrigger>
-                                    </Triggers>
-                                    <Principals>
-                                        <Principal id="Author">
-                                            <UserId>S-1-5-21-58857817-991352899-1529334289-1002</UserId>
-                                            <LogonType>Password</LogonType>
-                                            <RunLevel>HighestAvailable</RunLevel>
-                                        </Principal>
-                                    </Principals>
-                                    <Settings>
-                                        <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-                                        <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-                                        <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
-                                        <AllowHardTerminate>true</AllowHardTerminate>
-                                        <StartWhenAvailable>false</StartWhenAvailable>
-                                        <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-                                        <IdleSettings>
-                                            <StopOnIdleEnd>true</StopOnIdleEnd>
-                                            <RestartOnIdle>false</RestartOnIdle>
-                                        </IdleSettings>
-                                        <AllowStartOnDemand>true</AllowStartOnDemand>
-                                        <Enabled>true</Enabled>
-                                        <Hidden>false</Hidden>
-                                        <RunOnlyIfIdle>false</RunOnlyIfIdle>
-                                        <DisallowStartOnRemoteAppSession>false</DisallowStartOnRemoteAppSession>
-                                        <UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine>
-                                        <WakeToRun>false</WakeToRun>
-                                        <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>
-                                        <DeleteExpiredTaskAfter>PT0S</DeleteExpiredTaskAfter>
-                                        <Priority>7</Priority>
-                                    </Settings>
-                                    <Actions Context="Author">
-                                        <Exec>
-                                            <Command>C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Command>
-                                            <Arguments>-File C:\\CleanpUpSite.ps1 $using:env:deploymentName</Arguments>
-                                            <WorkingDirectory>C:\\Windows\\System32\\WindowsPowerShell\\v1.0</WorkingDirectory>
-                                        </Exec>
-                                    </Actions>
-                                </Task>
-                            '@
-                            $taskXml | Out-File "C:\\TaskDefinition.xml" -Force
-                            Register-ScheduledTask -xml (Get-Content 'C:\\TaskDefinition.xml' | Out-String) -TaskPath "\\" -TaskName "Delete $using:env:deploymentName IIS Site" -User "$using:env:WEBSERVER_USERNAME" -Password "$using:env:WEBSERVER_PASSWORD" -Force
+                            # Define task parameters
+                            $expireYear = $using:env:expireYear
+                            $expireMonth = $using:env:expireMonth
+                            $expireDay = $using:env:expireDay
+                            $expireHour = $using:env:expireHour
+                            $expireMinute = $using:env:expireMinute
+                            $deploymentName = $using:env:deploymentName
+                            $Username = $using:env:WEBSERVER_USERNAME
+                            $Password = $using:env:WEBSERVER_PASSWORD
+
+                            $taskName = "Delete $deploymentName Site"
+                            $triggerStartBoundary = "$($expireYear)-$($expireMonth)-$($expireDay)T$($expireHour):$($expireMinute):00"
+                            $userId = "S-1-5-21-58857817-991352899-1529334289-1002"
+                            $logonType = "Password"
+                            $runLevel = "HighestAvailable"
+                            $command = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+                            $arguments = "-File C:\\CleanpUpSite.ps1 $deploymentName"
+                            $workingDirectory = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+
+                            # Create and register the task
+                            $action = New-ScheduledTaskAction -Execute $command -Argument $arguments -WorkingDirectory $workingDirectory
+                            $unregisterAction = New-ScheduledTaskAction -Execute "Unregister-ScheduledTask" -Argument "-TaskName '$taskName' -Confirm:$false"
+
+                            $trigger = New-ScheduledTaskTrigger -Once -At $triggerStartBoundary -RepetitionInterval ([TimeSpan]::FromMinutes(1)) -RepetitionDuration ([TimeSpan]::FromMinutes(10))
+                            $principal = New-ScheduledTaskPrincipal -UserId $userId -LogonType $logonType -RunLevel $runLevel
+
+                            Register-ScheduledTask -Action @($action, $unregisterAction) -Trigger $trigger -TaskName $taskName -Principal $principal -User "$Username" -Password "$Password"
                         }
                         Remove-PSSession $session
                     '''
