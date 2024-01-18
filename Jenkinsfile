@@ -303,7 +303,75 @@ pipeline {
         //         }
         //     }
         // }
-        stage('Create IIS WEB Site'){
+        // stage('Create IIS WEB Site'){
+        //     steps{
+        //         script{
+        //             def remotePSSession = '''
+        //                 $server = "$env:WEB_SERVER_IP"
+        //                 $uri = "https://$($server):5986"
+        //                 $user = "$env:WEBSERVER_USERNAME"
+        //                 $password = "$env:WEBSERVER_PASSWORD"
+        //                 $securepassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+        //                 $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $user, $securepassword
+
+        //                 $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
+        //                 $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
+        //                 Invoke-Command -Session $session -ScriptBlock {
+        //                     $folderName= $using:env:deploymentName
+        //                     $SA_PASSWORD= $using:env:SA_PASSWORD
+        //                     $SQLSERVER= $using:env:SQLSERVER
+
+        //                     # Create publish folder
+        //                     robocopy.exe "C:\\Publish0" "C:\\WebDemo\\$folderName" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
+
+        //                     $siteName = "$folderName"
+        //                     $publishFolder = "C:\\WebDemo\\$folderName"
+        //                     $applicationPoolName = "$folderName"
+        //                     $bindingIPAddress = "*"
+        //                     $bindingPort = "80"
+        //                     $hostname = "${folderName}-web.minhnhut.online"
+
+        //                     # Check if IIS module is installed
+        //                     if (-not (Get-Module -ListAvailable -Name WebAdministration)) {
+        //                         Install-Module -Name WebAdministration -Force -AllowClobber
+        //                     }
+
+        //                     # Import the WebAdministration module
+        //                     Import-Module WebAdministration
+
+        //                     # Create Application Pool
+        //                     New-WebAppPool -Name $applicationPoolName
+
+        //                     # Create Website with Custom Binding
+        //                     New-Website -Name $siteName -PhysicalPath $publishFolder -ApplicationPool $applicationPoolName -Port $bindingPort -HostHeader $hostname -Force
+
+        //                     Write-Host "Website '$siteName' created successfully."
+
+        //                     $configFilePath = "C:\\WebDemo\\$folderName\\web.config"
+
+        //                     # Check if the file exists
+        //                     if (Test-Path $configFilePath) {
+        //                         $configContent = Get-Content -Path $configFilePath -Raw
+
+        //                         # Perform the necessary modifications (replace database names)
+        //                         $configContent = $configContent -replace "Server=SQLServer,1433;Database=DBDataName;User ID=username; Password=password;", "Server=$SQLSERVER,1433;Database=1BOSS_$folderName;User ID=sa; Password=$SA_PASSWORD;"
+        //                         $configContent = $configContent -replace "Server=SQLServer,1433;Database=DBAdminName;User ID=username; Password=password;", "Server=$SQLSERVER,1433;Database=AS_ADMIN_1BOSS_$folderName;User ID=sa; Password=$SA_PASSWORD;"
+
+        //                         # Save the modified content back to the web.config file
+        //                         $configContent | Set-Content -Path $configFilePath
+
+        //                         Write-Host "web.config file updated successfully."
+        //                     } else {
+        //                         Write-Host "The web.config file does not exist in the specified path."
+        //                     }
+        //                 }
+        //                 Remove-PSSession $session
+        //             '''
+        //             powershell(script: remotePSSession)
+        //         }
+        //     }
+        // }
+        stage('Create Task Scheduler'){
             steps{
                 script{
                     def remotePSSession = '''
@@ -317,53 +385,60 @@ pipeline {
                         $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                         $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
                         Invoke-Command -Session $session -ScriptBlock {
-                            $folderName= $using:env:deploymentName
-                            $SA_PASSWORD= $using:env:SA_PASSWORD
-                            $SQLSERVER= $using:env:SQLSERVER
-
-                            # Create publish folder
-                            robocopy.exe "C:\\Publish0" "C:\\WebDemo\\$folderName" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
-
-                            $siteName = "$folderName"
-                            $publishFolder = "C:\\WebDemo\\$folderName"
-                            $applicationPoolName = "$folderName"
-                            $bindingIPAddress = "*"
-                            $bindingPort = "80"
-                            $hostname = "${folderName}-web.minhnhut.online"
-
-                            # Check if IIS module is installed
-                            if (-not (Get-Module -ListAvailable -Name WebAdministration)) {
-                                Install-Module -Name WebAdministration -Force -AllowClobber
-                            }
-
-                            # Import the WebAdministration module
-                            Import-Module WebAdministration
-
-                            # Create Application Pool
-                            New-WebAppPool -Name $applicationPoolName
-
-                            # Create Website with Custom Binding
-                            New-Website -Name $siteName -PhysicalPath $publishFolder -ApplicationPool $applicationPoolName -Port $bindingPort -HostHeader $hostname -Force
-
-                            Write-Host "Website '$siteName' created successfully."
-
-                            $configFilePath = "C:\\WebDemo\\$folderName\\web.config"
-
-                            # Check if the file exists
-                            if (Test-Path $configFilePath) {
-                                $configContent = Get-Content -Path $configFilePath -Raw
-
-                                # Perform the necessary modifications (replace database names)
-                                $configContent = $configContent -replace "Server=SQLServer,1433;Database=DBDataName;User ID=username; Password=password;", "Server=$SQLSERVER,1433;Database=1BOSS_$folderName;User ID=sa; Password=$SA_PASSWORD;"
-                                $configContent = $configContent -replace "Server=SQLServer,1433;Database=DBAdminName;User ID=username; Password=password;", "Server=$SQLSERVER,1433;Database=AS_ADMIN_1BOSS_$folderName;User ID=sa; Password=$SA_PASSWORD;"
-
-                                # Save the modified content back to the web.config file
-                                $configContent | Set-Content -Path $configFilePath
-
-                                Write-Host "web.config file updated successfully."
-                            } else {
-                                Write-Host "The web.config file does not exist in the specified path."
-                            }
+                            $taskXml = @"
+                                <Task
+                                    xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task" version="1.3">
+                                    <RegistrationInfo>
+                                        <Author>$using:env:WEBSERVER_USERNAME</Author>
+                                        <URI>\\Delete test Site</URI>
+                                    </RegistrationInfo>
+                                    <Triggers>
+                                        <TimeTrigger>
+                                            <StartBoundary>$using:env:expireYear-$using:env:expireMonth-$using:env:expireDayT$using:env:expireHour:$using:env:expireMinute:00+07:00</StartBoundary>
+                                            <EndBoundary>$using:env:expireYear-$using:env:expireMonth-$using:env:expireDayT$using:env:expireHour:$using:env:expireMinute:10+07:00</EndBoundary>
+                                            <Enabled>true</Enabled>
+                                        </TimeTrigger>
+                                    </Triggers>
+                                    <Principals>
+                                        <Principal id="Author">
+                                            <UserId>S-1-5-21-58857817-991352899-1529334289-1002</UserId>
+                                            <LogonType>Password</LogonType>
+                                            <RunLevel>HighestAvailable</RunLevel>
+                                        </Principal>
+                                    </Principals>
+                                    <Settings>
+                                        <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+                                        <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+                                        <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
+                                        <AllowHardTerminate>true</AllowHardTerminate>
+                                        <StartWhenAvailable>false</StartWhenAvailable>
+                                        <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+                                        <IdleSettings>
+                                            <StopOnIdleEnd>true</StopOnIdleEnd>
+                                            <RestartOnIdle>false</RestartOnIdle>
+                                        </IdleSettings>
+                                        <AllowStartOnDemand>true</AllowStartOnDemand>
+                                        <Enabled>true</Enabled>
+                                        <Hidden>false</Hidden>
+                                        <RunOnlyIfIdle>false</RunOnlyIfIdle>
+                                        <DisallowStartOnRemoteAppSession>false</DisallowStartOnRemoteAppSession>
+                                        <UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine>
+                                        <WakeToRun>false</WakeToRun>
+                                        <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>
+                                        <DeleteExpiredTaskAfter>PT0S</DeleteExpiredTaskAfter>
+                                        <Priority>7</Priority>
+                                    </Settings>
+                                    <Actions Context="Author">
+                                        <Exec>
+                                            <Command>C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Command>
+                                            <Arguments>-File C:\\CleanpUpSite.ps1 $using:env:deploymentName</Arguments>
+                                            <WorkingDirectory>C:\\Windows\\System32\\WindowsPowerShell\\v1.0</WorkingDirectory>
+                                        </Exec>
+                                    </Actions>
+                                </Task>
+                            "@
+                            $taskXml | Out-File "C:\\TaskDefinition.xml" -Force
+                            Register-ScheduledTask -xml (Get-Content 'C:\\TaskDefinition.xml' | Out-String) -TaskPath "\\" -TaskName "Delete $using:env:deploymentName IIS Site" -User "$using:env:WEBSERVER_USERNAME" -Password "$using:env:WEBSERVER_PASSWORD" -Force
                         }
                         Remove-PSSession $session
                     '''
