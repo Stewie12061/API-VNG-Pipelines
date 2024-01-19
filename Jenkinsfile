@@ -11,14 +11,14 @@ pipeline {
         DNS_APIKEY = credentials('dns-api-key-creds')
         DNS_APISECRET = credentials('dns-api-secret-creds')
         DNS_RECORD_DATA_API = '180.93.180.102'
-        DNS_RECORD_DATA_WEB = '116.118.95.121'
+        //DNS_RECORD_DATA_WEB = '116.118.95.121'
         DOMAIN = 'minhnhut.online'
         SA_PASSWORD = credentials('sa-password-creds')
         WEBSERVER_PASSWORD = credentials('web-server-password-creds')
     }
 
     parameters {
-        string(name: 'deploymentName', defaultValue: 'test', description: 'Deployment Name')
+        string(name: 'deploymentName', defaultValue: '@@@', description: 'Deployment Name')
         string(name: 'expireMinute', defaultValue: '30', description: 'Expiration Minute (0-59)')
         string(name: 'expireHour', defaultValue: '17', description: 'Expiration Hour (0-23)')
         string(name: 'expireDay', defaultValue: '1', description: 'Expiration Day (1-31)')
@@ -278,7 +278,7 @@ pipeline {
                         $domain = "$env:DOMAIN"
                         $recordType = "A"
                         $recordName = "$env:deploymentName-web"
-                        $recordData = "$env:DNS_RECORD_DATA_WEB"
+                        $recordData = "$env:WEB_SERVER_IP"
                         $ttl = 600
 
                         # Construct the API endpoint URL
