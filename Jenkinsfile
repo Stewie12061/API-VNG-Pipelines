@@ -420,7 +420,7 @@ pipeline {
                                 ) -Principal (
                                     New-ScheduledTaskPrincipal -UserId $userId -LogonType $logonType -RunLevel $runLevel
                                 ) -Settings (
-                                    New-ScheduledTaskSettingsSet -Priority '7'
+                                    New-ScheduledTaskSettingsSet -Priority '7' -AllowStartIfOnBatteries -StartWhenAvailable -WakeToRun
                                 )
                             )
                         }
