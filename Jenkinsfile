@@ -376,9 +376,6 @@ pipeline {
                 script{
                     
                     def remotePSSession = '''
-                        $utcPlus7 = Get-Date -Year $env:expireYear -Month $env:expireMonth -Day $env:expireDay -Hour $env:expireHour -Minute $env:expireMinute -Second 0
-                        $utc = $utcPlus7.ToUniversalTime()
-
                         $server = "$env:WEB_SERVER_IP"
                         $uri = "https://$($server):5986"
                         $user = "$env:WEBSERVER_USERNAME"
@@ -388,23 +385,19 @@ pipeline {
 
                         $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                         $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
-                        Invoke-Command -Session $session -ArgumentList $utc -ScriptBlock {
-                            # Define task parameters
-                            param($utc)
+                        Invoke-Command -Session $session -ScriptBlock {
+
                             $username = "$using:env:WEBSERVER_USERNAME"
                             $password = "$using:env:WEBSERVER_PASSWORD"
                             $expireMinute = "$using:env:expireMinute"
                             $deploymentName = "$using:env:deploymentName"
-
-                            $utcMinus8 = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
-                            $convertTime = [System.TimeZoneInfo]::ConvertTime($utc, $utcMinus8) 
-                            $convertHour = $convertTime.Hour
-                            $convertDay = $convertTime.Day
-                            $convertMonth = $convertTime.Month
-                            $converYear = $convertTime.Year
+                            $expireHour = "$using:env:expireHour"
+                            $expireDay = "$using:env:expireDay"
+                            $expireMonth = "$using:env:expireMonth"
+                            $expireYear = "$using:env:expireYear"
 
                             $taskName = "Delete $deploymentName Site"
-                            $triggerStartBoundary = Get-Date -Year $converYear -Month $convertMonth -Day $convertDay -Hour $convertHour -Minute $using:env:expireMinute -Second 0 -Format 'yyyy-MM-ddTHH:mm:ss'
+                            $triggerStartBoundary = Get-Date -Year $expireYear -Month $expireMonth -Day $expireDay -Hour $expireHour -Minute $expireMinute -Second 0 -Format 'yyyy-MM-ddTHH:mm:ss'
                             $userId = "S-1-5-21-58857817-991352899-1529334289-1002"
                             $logonType = "Password"
                             $runLevel = "Highest"
