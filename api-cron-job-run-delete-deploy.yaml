@@ -44,8 +44,8 @@ spec:
               serverName=$(SQLSERVER)
               /opt/mssql-tools/bin/sqlcmd -S $serverName -U sa -P $dbPassword -Q "
                 USE master;
-                ALTER DATABASE [AS_ADMIN_1BOSS_$(deploymentName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                DROP DATABASE [AS_ADMIN_1BOSS_$(deploymentName)];"
+                ALTER DATABASE [AS_ADMIN_1BOSS_$(dbName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                DROP DATABASE [AS_ADMIN_1BOSS_$(dbName)];"
             volumeMounts:
             - name: secrets-volume
               mountPath: /mnt/secrets
@@ -59,8 +59,8 @@ spec:
               serverName=$(SQLSERVER)
               /opt/mssql-tools/bin/sqlcmd -S $serverName -U sa -P $dbPassword -Q "
                 USE master;
-                ALTER DATABASE [1BOSS_$(deploymentName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                DROP DATABASE [1BOSS_$(deploymentName)];"
+                ALTER DATABASE [1BOSS_$(dbName)] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                DROP DATABASE [1BOSS_$(dbName)];"
             volumeMounts:
             - name: secrets-volume
               mountPath: /mnt/secrets
