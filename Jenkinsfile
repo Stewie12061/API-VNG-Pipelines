@@ -322,10 +322,10 @@ pipeline {
                             $SQLSERVER= $using:env:SQLSERVER
 
                             # Create publish folder
-                            robocopy.exe "D:\\Publish\\PUBLISH" "D:\\ERP9\\$folderName\\Web" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
+                            robocopy.exe "D:\\Publish\\PUBLISH" "D:\\ERP9-Demo\\$folderName\\Web" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
 
                             $siteName = "$folderName"
-                            $publishFolder = "D:\\ERP9\\$folderName\\Web"
+                            $publishFolder = "D:\\ERP9-Demo\\$folderName\\Web"
                             $applicationPoolName = "$folderName"
                             $bindingIPAddress = "*"
                             $bindingPort = "80"
@@ -347,7 +347,7 @@ pipeline {
 
                             Write-Host "Website '$siteName' created successfully."
 
-                            $configFilePath = "D:\\ERP9\\$folderName\\Web\\web.config"
+                            $configFilePath = "D:\\ERP9-Demo\\$folderName\\Web\\web.config"
 
                             # Check if the file exists
                             if (Test-Path $configFilePath) {
