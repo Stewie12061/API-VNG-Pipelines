@@ -318,7 +318,7 @@ pipeline {
                         $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
                         Invoke-Command -Session $session -ScriptBlock {
                             $folderName= $using:env:deploymentName
-                            New-Item -Path 'C:\\FileShares\\$folderName\\Attached' -ItemType Directory
+                            New-Item -Path "C:\\FileShares\\$folderName\\Attached" -ItemType Directory
                         }
                         Remove-PSSession $session
                     '''
