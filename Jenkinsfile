@@ -368,7 +368,7 @@ pipeline {
                             New-Website -Name $siteName -PhysicalPath $publishFolder -ApplicationPool $applicationPoolName -Port $bindingPort -HostHeader $hostname -Force
 
                             Import-Module WebAdministration
-                            New-WebVirtualDirectory -Site $siteName -Name "Attached" -PhysicalPath \\\\61.28.229.125\\FileShares\\$folderName\\Attached"
+                            New-WebVirtualDirectory -Site $siteName -Name "Attached" -PhysicalPath "\\\\61.28.229.125\\FileShares\\$folderName\\Attached"
 
                             Write-Host "Website '$siteName' created successfully."
 
