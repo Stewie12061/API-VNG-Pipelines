@@ -391,6 +391,8 @@ pipeline {
                         }
                         Remove-PSSession $session
                     '''
+
+                    powershell(script: remotePSSQLSession)
                     powershell(script: remotePSSession)
                 }
             }
