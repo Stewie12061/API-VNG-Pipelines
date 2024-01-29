@@ -322,10 +322,10 @@ pipeline {
                             $SQLSERVER= $using:env:SQLSERVER
 
                             # Create publish folder
-                            robocopy.exe "C:\\Publish0" "C:\\WebDemo\\$folderName" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
+                            robocopy.exe "D:\\Publish\\PUBLISH" "D:\\ERP9\\$folderName\\Web" /E /MIR /MT:4 /np /ndl /nfl /nc /ns
 
                             $siteName = "$folderName"
-                            $publishFolder = "C:\\WebDemo\\$folderName"
+                            $publishFolder = "D:\\ERP9\\$folderName\\Web"
                             $applicationPoolName = "$folderName"
                             $bindingIPAddress = "*"
                             $bindingPort = "80"
@@ -347,7 +347,7 @@ pipeline {
 
                             Write-Host "Website '$siteName' created successfully."
 
-                            $configFilePath = "C:\\WebDemo\\$folderName\\web.config"
+                            $configFilePath = "D:\\ERP9\\$folderName\\Web\\web.config"
 
                             # Check if the file exists
                             if (Test-Path $configFilePath) {
@@ -402,7 +402,7 @@ pipeline {
                             $logonType = "Password"
                             $runLevel = "Highest"
                             $command = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
-                            $arguments = "-File C:\\CleanpUpSite.ps1 $deploymentName"
+                            $arguments = "-File D:\\CleanpUpSite.ps1 $deploymentName"
 
                             Register-ScheduledTask -TaskName "$taskName" -User "$username" -Password "$password" -Force -InputObject (
                                 New-ScheduledTask -Action (
