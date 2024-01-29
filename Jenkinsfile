@@ -325,7 +325,7 @@ pipeline {
                     def remotePSSession = '''
                         $server = "$env:WEB_SERVER_IP"
                         $uri = "https://$($server):5986"
-                        $user = "$env:WEBSERVER_USERNAME"
+                        $user = "sqlserver\\stewie12061"
                         $password = "$env:WEBSERVER_PASSWORD"
                         $securepassword = ConvertTo-SecureString -String $password -AsPlainText -Force
                         $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $user, $securepassword
