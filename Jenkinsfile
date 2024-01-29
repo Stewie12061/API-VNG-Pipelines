@@ -358,7 +358,7 @@ pipeline {
                             # Create Application Pool
                             New-WebAppPool -Name $applicationPoolName
 
-                            $customPool = Get-Item IIS:\\AppPools\\DemoAppPool
+                            $customPool = Get-Item IIS:\\AppPools\\$applicationPoolName
                             $customPool.processModel.userName = "stewie"
                             $customPool.processModel.password = "As19006123"
                             $customPool.processModel.identityType = 3
