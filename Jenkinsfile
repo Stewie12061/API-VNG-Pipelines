@@ -366,6 +366,8 @@ pipeline {
 
                             # Create Website with Custom Binding
                             New-Website -Name $siteName -PhysicalPath $publishFolder -ApplicationPool $applicationPoolName -Port $bindingPort -HostHeader $hostname -Force
+
+                            Start-Sleep -Seconds 30
                             $test = "\\\\61.28.229.125\\FileShares\\$folderName\\Attached"
                             Write-Host "$test"
                             New-WebVirtualDirectory -Site $siteName -Name "Attached" -PhysicalPath "$test"
