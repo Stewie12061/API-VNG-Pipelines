@@ -306,6 +306,22 @@ pipeline {
         stage('Create IIS WEB Site'){
             steps{
                 script{
+                    def remotePSSQLSession = '''
+                        $server = "$env:SQLSERVER"
+                        $uri = "https://$($server):5986"
+                        $user = "$env:WEBSERVER_USERNAME"
+                        $password = "$env:WEBSERVER_PASSWORD"
+                        $securepassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+                        $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $user, $securepassword
+
+                        $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
+                        $session = New-PSSession -ConnectionUri $uri -Credential $cred -SessionOption $sessionOption
+                        Invoke-Command -Session $session -ScriptBlock {
+                            $folderName= $using:env:deploymentName
+                            New-Item -Path 'C:\\FileShares\\$folderName\\Attached' -ItemType Directory
+                        }
+                        Remove-PSSession $session
+                    '''
                     def remotePSSession = '''
                         $server = "$env:WEB_SERVER_IP"
                         $uri = "https://$($server):5986"
@@ -342,8 +358,16 @@ pipeline {
                             # Create Application Pool
                             New-WebAppPool -Name $applicationPoolName
 
+                            $customPool = Get-Item IIS:\\AppPools\\DemoAppPool
+                            $customPool.processModel.userName = "stewie"
+                            $customPool.processModel.password = "As19006123"
+                            $customPool.processModel.identityType = 3
+                            $customPool | Set-Item
+
                             # Create Website with Custom Binding
                             New-Website -Name $siteName -PhysicalPath $publishFolder -ApplicationPool $applicationPoolName -Port $bindingPort -HostHeader $hostname -Force
+
+                            New-WebVirtualDirectory -Site $siteName -Name "Attached" -PhysicalPath "\\\\SQLSERVER\\FileShares\\$folderName\\Attached"
 
                             Write-Host "Website '$siteName' created successfully."
 
